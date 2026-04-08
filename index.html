@@ -2,223 +2,250 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>핑퐁 챔피언십 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>리얼 탁구 마스터</title>
     <style>
-        :root { --table: #1e5d2f; --line: #ffffff; --user-color: #e74c3c; --cpu-color: #3498db; }
-        body { margin: 0; background: #000; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; touch-action: none; }
+        :root { --table: #1e5d2f; --line: #ffffff; }
+        body { margin: 0; background: #000; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Apple SD Gothic Neo', sans-serif; touch-action: none; color: white; }
         
-        /* 탁구대 */
-        #court { flex: 1; position: relative; background: var(--table); border: 6px solid var(--line); box-sizing: border-box; }
-        #net { position: absolute; top: 50%; width: 100%; height: 4px; background: rgba(255,255,255,0.4); z-index: 5; }
+        /* 인트로 및 설정 */
+        #menu { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #menu h1 { color: #f1c40f; margin-bottom: 30px; }
+        .btn-group { display: flex; gap: 10px; }
+        .menu-btn { padding: 15px 30px; border: 2px solid #f1c40f; background: transparent; color: #f1c40f; font-weight: bold; cursor: pointer; border-radius: 10px; }
+        .menu-btn:hover { background: #f1c40f; color: #000; }
 
-        /* HUD (점수판) */
-        #hud { position: absolute; top: 15px; width: 100%; display: flex; justify-content: space-around; color: white; font-weight: bold; font-size: 20px; z-index: 10; pointer-events: none; }
-        #hud span { color: #f1c40f; font-size: 28px; margin: 0 10px; }
+        /* 탁구대 */
+        #court { flex: 1; position: relative; background: var(--table); border: 8px solid var(--line); margin: 10px; perspective: 1000px; overflow: hidden; }
+        #net { position: absolute; top: 50%; width: 100%; height: 6px; background: rgba(255,255,255,0.6); border: 1px solid #fff; z-index: 5; }
 
         /* 오브젝트 */
-        #ball { position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 15; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
+        #ball { position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; box-shadow: 0 5px 10px rgba(0,0,0,0.5); transition: transform 0.05s linear; }
+        #ball-shadow { position: absolute; width: 16px; height: 8px; background: rgba(0,0,0,0.3); border-radius: 50%; transform: translate(-50%, -50%); z-index: 4; }
         
-        .paddle { position: absolute; width: 70px; height: 70px; transform: translate(-50%, -50%); z-index: 20; transition: transform 0.1s; }
-        #user { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
-        #cpu { filter: drop-shadow(0 -4px 8px rgba(0,0,0,0.5)); }
-
-        /* 하단 컨트롤 */
-        #controls { display: flex; justify-content: center; gap: 8px; padding: 15px; background: #111; border-top: 1px solid #333; }
-        button { padding: 10px 20px; border-radius: 25px; border: 1px solid #555; background: #222; color: white; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        button.active { background: #f1c40f; color: #000; border-color: #f1c40f; }
+        .paddle { position: absolute; width: 80px; height: 80px; transform: translate(-50%, -50%); z-index: 20; transition: transform 0.1s ease-out; }
+        
+        /* UI */
+        #hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; font-size: 24px; font-weight: bold; z-index: 30; pointer-events: none; text-shadow: 2px 2px 4px #000; }
+        #msg { position: absolute; top: 60%; width: 100%; text-align: center; font-size: 30px; color: #f1c40f; display: none; z-index: 40; }
     </style>
 </head>
 <body>
 
-<div id="court">
-    <div id="hud">
-        <div>나 <span id="us">0</span></div>
-        <div id="level-txt">Lv.1 초보자</div>
-        <div><span id="cs">0</span> 상대</div>
+<div id="menu">
+    <h1>🏓 탁구 마스터 2026</h1>
+    <p>난이도를 선택하세요</p>
+    <div class="btn-group">
+        <button class="menu-btn" onclick="startGame(0)">초보자</button>
+        <button class="menu-btn" onclick="startGame(1)">아마추어</button>
+        <button class="menu-btn" onclick="startGame(2)">프로</button>
     </div>
-    <div id="net"></div>
-    <div id="ball"></div>
-
-    <svg id="user" class="paddle" viewBox="0 0 100 100">
-        <circle cx="50" cy="40" r="40" fill="#e74c3c" stroke="#2c3e50" stroke-width="5"/>
-        <rect x="44" y="80" width="12" height="20" rx="3" fill="#5d4037"/>
-    </svg>
-
-    <svg id="cpu" class="paddle" viewBox="0 0 100 100">
-        <circle cx="50" cy="60" r="40" fill="#3498db" stroke="#2c3e50" stroke-width="5"/>
-        <rect x="44" y="0" width="12" height="20" rx="3" fill="#5d4037"/>
-    </svg>
 </div>
 
-<div id="controls">
-    <button id="btn-cut" onclick="setSkill('cut')">커트</button>
-    <button id="btn-drive" class="active" onclick="setSkill('drive')">드라이브</button>
-    <button id="btn-smash" onclick="setSkill('smash')">스매시</button>
+<div id="hud">
+    <div>ME <span id="us">0</span></div>
+    <div>CPU <span id="cs">0</span></div>
+</div>
+
+<div id="court">
+    <div id="net"></div>
+    <div id="ball-shadow"></div>
+    <div id="ball"></div>
+    <div id="msg">OUT!</div>
+
+    <svg id="user-paddle" class="paddle" viewBox="0 0 100 100">
+        <circle cx="50" cy="40" r="40" fill="#e74c3c" stroke="#333" stroke-width="5"/>
+        <rect x="45" y="80" width="10" height="20" fill="#5d4037"/>
+    </svg>
+
+    <svg id="cpu-paddle" class="paddle" viewBox="0 0 100 100">
+        <circle cx="50" cy="60" r="40" fill="#3498db" stroke="#333" stroke-width="5"/>
+        <rect x="45" y="0" width="10" height="20" fill="#5d4037"/>
+    </svg>
 </div>
 
 <script>
-// =====================
-// 1. 상태 및 상수
-// =====================
-const state = {
-    score: { user: 0, cpu: 0 },
-    level: 1,
-    skill: 'drive',
-    running: false,
-    ball: { x: 0, y: 0, dx: 0, dy: 0 },
-    user: { x: 0 },
-    cpu: { x: 0 }
-};
-
-const LEVEL_CONFIG = [
-    { name: "초보자", cpuSpeed: 0.015, ballSpeed: 6 },
-    { name: "아마추어", cpuSpeed: 0.028, ballSpeed: 8 },
-    { name: "관장님", cpuSpeed: 0.045, ballSpeed: 11 }
-];
-
 const court = document.getElementById('court');
 const ballEl = document.getElementById('ball');
-const userEl = document.getElementById('user');
-const cpuEl = document.getElementById('cpu');
-const W = () => court.clientWidth;
-const H = () => court.clientHeight;
+const shadowEl = document.getElementById('ball-shadow');
+const userEl = document.getElementById('user-paddle');
+const cpuEl = document.getElementById('cpu-paddle');
+const msgEl = document.getElementById('msg');
 
-// =====================
-// 2. 입력 처리 (모바일 터치 & PC 마우스 공용)
-// =====================
-const moveHandler = e => {
-    if (!state.running) return;
-    const rect = court.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    state.user.x = Math.max(35, Math.min(W() - 35, clientX - rect.left));
+let state = {
+    running: false,
+    score: { user: 0, cpu: 0 },
+    level: 0,
+    ball: { x: 0, y: 0, z: 0, dx: 0, dy: 0, dz: 0, spin: 'none' },
+    user: { x: 0, y: 0, prevX: 0, swing: 0 },
+    cpu: { x: 0, y: 0, skill: 'drive' },
+    bounces: 0, // 현재 턴에서 바운드 횟수
+    lastHitter: 'cpu'
 };
 
-court.addEventListener('touchmove', e => { e.preventDefault(); moveHandler(e); }, { passive: false });
-court.addEventListener('mousemove', moveHandler);
+const LEVELS = [
+    { name: "초보자", cpuSpeed: 4, ballSpeed: 5, errorRate: 0.3 },
+    { name: "아마추어", cpuSpeed: 7, ballSpeed: 8, errorRate: 0.15 },
+    { name: "프로", cpuSpeed: 10, ballSpeed: 12, errorRate: 0.05 }
+];
 
-function setSkill(s) {
-    state.skill = s;
-    document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + s).classList.add('active');
-}
-
-// =====================
-// 3. 게임 엔진 로직
-// =====================
-function loop() {
-    if (!state.running) return;
-
-    // 공 이동
-    state.ball.x += state.ball.dx;
-    state.ball.y += state.ball.dy;
-
-    // 좌우 벽 충돌 방지 (아웃 처리)
-    if (state.ball.x < -20 || state.ball.x > W() + 20) {
-        scorePoint(state.ball.dy < 0);
-        return;
-    }
-
-    // 내 라켓 충돌 (하단)
-    const userY = H() - 60;
-    if (state.ball.y > userY - 10 && state.ball.y < userY + 10 && state.ball.dy > 0) {
-        if (state.ball.x > state.user.x - 45 && state.ball.x < state.user.x + 45) {
-            const hitFactor = (state.ball.x - state.user.x) / 40;
-            const skillMap = { cut: 0.8, drive: 1.3, smash: 2.0 };
-            const baseSpeed = LEVEL_CONFIG[state.level - 1].ballSpeed;
-            
-            state.ball.dy = -Math.abs(baseSpeed * skillMap[state.skill]);
-            state.ball.dx += hitFactor * 5;
-        }
-    }
-
-    // 상대 라켓 충돌 (상단)
-    const cpuY = 60;
-    if (state.ball.y > cpuY - 10 && state.ball.y < cpuY + 10 && state.ball.dy < 0) {
-        if (state.ball.x > state.cpu.x - 45 && state.ball.x < state.cpu.x + 45) {
-            state.ball.dy = Math.abs(state.ball.dy);
-            state.ball.dx += (Math.random() - 0.5) * 2;
-        }
-    }
-
-    // 앞뒤 아웃 판정
-    if (state.ball.y < -20) scorePoint(true);
-    else if (state.ball.y > H() + 20) scorePoint(false);
-
-    // AI 이동
-    const speed = W() * LEVEL_CONFIG[state.level - 1].cpuSpeed;
-    if (state.cpu.x < state.ball.x) state.cpu.x += speed;
-    else state.cpu.x -= speed;
-
-    draw();
-    requestAnimationFrame(loop);
-}
-
-// =====================
-// 4. 점수 및 시스템
-// =====================
-function scorePoint(userWon) {
-    state.running = false;
-    userWon ? state.score.user++ : state.score.cpu++;
-    
-    document.getElementById('us').innerText = state.score.user;
-    document.getElementById('cs').innerText = state.score.cpu;
-
-    if (state.score.user >= 11 || state.score.cpu >= 11) {
-        setTimeout(checkMatchEnd, 500);
-    } else {
-        setTimeout(resetBall, 800);
-    }
-}
-
-function checkMatchEnd() {
-    if (state.score.user >= 11) {
-        if (state.level < 3) {
-            alert(`Lv.${state.level} 클리어! 다음 단계로.`);
-            state.level++;
-        } else {
-            alert("🏆 축하합니다! 최종 우승하셨습니다!");
-            state.level = 1;
-        }
-    } else {
-        alert("👾 패배했습니다. 다시 도전하세요!");
-    }
-    state.score.user = 0; state.score.cpu = 0;
-    document.getElementById('us').innerText = "0";
-    document.getElementById('cs').innerText = "0";
+function startGame(idx) {
+    state.level = idx;
+    document.getElementById('menu').style.display = 'none';
+    state.score = { user: 0, cpu: 0 };
+    updateHUD();
     resetBall();
 }
 
-function resetBall() {
-    const config = LEVEL_CONFIG[state.level - 1];
-    document.getElementById('level-txt').innerText = `Lv.${state.level} ${config.name}`;
+// 마우스/터치 입력 및 스윙 모션 구현
+const moveHandler = e => {
+    const rect = court.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     
-    state.ball = {
-        x: W() / 2,
-        y: H() / 2,
-        dx: (Math.random() - 0.5) * 4,
-        dy: config.ballSpeed
-    };
-    state.user.x = W() / 2;
-    state.cpu.x = W() / 2;
-    state.running = true;
+    state.user.x = clientX - rect.left;
+    state.user.y = clientY - rect.top;
+    
+    // 휘두르는 각도 계산 (이전 X좌표와의 차이)
+    state.user.swing = (state.user.x - state.user.prevX) * 2;
+    state.user.prevX = state.user.x;
+};
+
+window.addEventListener('mousemove', moveHandler);
+window.addEventListener('touchmove', e => { e.preventDefault(); moveHandler(e); }, { passive: false });
+
+function update() {
+    if (!state.running) return;
+
+    const config = LEVELS[state.level];
+
+    // 1. 공 물리 엔진 (포물선 및 바운드)
+    state.ball.x += state.ball.dx;
+    state.ball.y += state.ball.dy;
+    state.ball.dz -= 0.2; // 중력 가속도
+    state.ball.z += state.ball.dz;
+
+    // 바운드 로직
+    if (state.ball.z <= 0) {
+        state.ball.z = 0;
+        state.ball.dz = Math.abs(state.ball.dz) * 0.8; // 튀어오름
+        state.bounces++;
+        
+        // 바운드 위치 판정 (네트 기준 자기 진영에 튀었는지 확인)
+        const isUserSide = state.ball.y > court.clientHeight / 2;
+        if ((state.lastHitter === 'user' && isUserSide && state.bounces === 1) || 
+            (state.lastHitter === 'cpu' && !isUserSide && state.bounces === 1)) {
+            // 정상 서브/공격 바운드
+        } else if (state.bounces > 1) {
+            // 한 진영에 두 번 튀면 아웃
+            endPoint(state.lastHitter === 'user');
+        }
+    }
+
+    // 2. 충돌 판정 (라켓)
+    // 사용자 라켓
+    if (state.ball.y > court.clientHeight - 80 && state.ball.dy > 0 && state.ball.z < 30) {
+        if (Math.abs(state.ball.x - state.user.x) < 50) {
+            handleHit('user');
+        }
+    }
+    // CPU 라켓
+    if (state.ball.y < 80 && state.ball.dy < 0 && state.ball.z < 30) {
+        if (Math.abs(state.ball.x - state.cpu.x) < 50) {
+            handleHit('cpu');
+        }
+    }
+
+    // 3. 아웃 판정
+    if (state.ball.x < 0 || state.ball.x > court.clientWidth || state.ball.y < -50 || state.ball.y > court.clientHeight + 50) {
+        endPoint(state.lastHitter === 'cpu'); // 마지막으로 친 사람이 넘겼으면 득점
+    }
+
+    // 4. CPU AI (랜덤 기술 및 부드러운 추적)
+    const cpuTarget = state.ball.x;
+    if (state.cpu.x < cpuTarget) state.cpu.x += config.cpuSpeed;
+    else state.cpu.x -= config.cpuSpeed;
+
     draw();
-    loop();
+    requestAnimationFrame(update);
+}
+
+function handleHit(hitter) {
+    state.lastHitter = hitter;
+    state.bounces = 0;
+    const config = LEVELS[state.level];
+
+    if (hitter === 'user') {
+        // 기술 상성 로직 (예시: 상대가 커트인데 내가 무리하게 스매시하면 dz 낮아짐 -> 네트행)
+        let skill = Math.abs(state.user.swing) > 15 ? 'smash' : 'drive';
+        if (state.cpu.skill === 'cut' && skill === 'smash' && Math.random() < 0.3) {
+            state.ball.dz = 1; // 네트 못넘게 낮게 튀게 함
+        } else {
+            state.ball.dz = 5 + Math.random() * 3;
+        }
+        
+        state.ball.dy = -config.ballSpeed;
+        state.ball.dx = state.user.swing * 0.5;
+    } else {
+        // CPU 랜덤 기술
+        state.cpu.skill = Math.random() > 0.7 ? 'cut' : 'drive';
+        state.ball.dy = config.ballSpeed;
+        state.ball.dz = 5 + Math.random() * 3;
+        state.ball.dx = (Math.random() - 0.5) * 5;
+    }
 }
 
 function draw() {
-    ballEl.style.left = state.ball.x + 'px';
-    ballEl.style.top = state.ball.y + 'px';
-    userEl.style.left = state.user.x + 'px';
-    userEl.style.top = (H() - 60) + 'px';
-    cpuEl.style.left = state.cpu.x + 'px';
-    cpuEl.style.top = '60px';
+    // 공 크기를 z(높이)에 따라 변화시켜 원근감 부여
+    const ballScale = 1 + (state.ball.z / 50);
+    ballEl.style.left = `${state.ball.x}px`;
+    ballEl.style.top = `${state.ball.y - state.ball.z}px`; // 높이만큼 위로
+    ballEl.style.transform = `translate(-50%, -50%) scale(${ballScale})`;
+
+    shadowEl.style.left = `${state.ball.x}px`;
+    shadowEl.style.top = `${state.ball.y}px`;
+    shadowEl.style.transform = `translate(-50%, -50%) scale(${ballScale * 0.8})`;
+
+    userEl.style.left = `${state.user.x}px`;
+    userEl.style.top = `${court.clientHeight - 60}px`;
+    userEl.style.transform = `translate(-50%, -50%) rotate(${state.user.swing}deg)`;
+
+    cpuEl.style.left = `${state.cpu.x}px`;
+    cpuEl.style.top = `60px`;
+    // CPU는 흔들림 방지를 위해 미세한 회전만
+    cpuEl.style.transform = `translate(-50%, -50%) rotate(${Math.sin(Date.now()/200)*5}deg)`;
 }
 
-// 시작
-window.addEventListener('resize', () => { if(state.running) resetBall(); });
-resetBall();
-</script>
+function endPoint(userWin) {
+    state.running = false;
+    userWin ? state.score.user++ : state.score.cpu++;
+    updateHUD();
+    msgEl.innerText = userWin ? "득점! 👏" : "실점... 😢";
+    msgEl.style.display = "block";
+    
+    setTimeout(() => {
+        msgEl.style.display = "none";
+        if (state.score.user >= 11 || state.score.cpu >= 11) {
+            alert(state.score.user >= 11 ? "경기 승리!" : "경기 패배...");
+            document.getElementById('menu').style.display = 'flex';
+        } else {
+            resetBall();
+        }
+    }, 1000);
+}
 
+function resetBall() {
+    state.ball = { x: court.clientWidth / 2, y: 100, z: 100, dx: 0, dy: 3, dz: 0 };
+    state.lastHitter = 'cpu';
+    state.bounces = 0;
+    state.running = true;
+    update();
+}
+
+function updateHUD() {
+    document.getElementById('us').innerText = state.score.user;
+    document.getElementById('cs').innerText = state.score.cpu;
+}
+</script>
 </body>
 </html>
