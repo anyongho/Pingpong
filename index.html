@@ -3,36 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ITTF World Tour - Ping Pong</title>
+    <title>ITTF World Tour - Ping Pong Professional</title>
     <style>
         :root { --table-blue: #1e5d2f; --floor: #1a1a1a; --line: #ffffff; }
         body { margin: 0; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Pretendard', sans-serif; color: white; }
-        
-        /* 실제 경기장 배경 */
         #stadium { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2c3e50 0%, #000 100%); }
-
-        /* 점수판 (심판석 느낌) */
         #scoreboard { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; z-index: 50; }
         .score-card { background: #111; border: 2px solid #444; padding: 15px; border-radius: 10px; text-align: center; width: 80px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .score-card .val { font-size: 40px; font-weight: bold; color: #f1c40f; line-height: 1; }
         .score-card .name { font-size: 11px; color: #888; margin-top: 8px; letter-spacing: 1px; }
-
-        /* 탁구대 (비율 최적화: 가로를 좁게) */
         #table { position: relative; width: 420px; height: 85vh; background: var(--table-blue); border: 6px solid var(--line); box-shadow: 0 40px 80px rgba(0,0,0,0.9); perspective: 1200px; }
         #net { position: absolute; top: 50%; width: 108%; left: -4%; height: 5px; background: rgba(255,255,255,0.3); border-top: 2px solid #fff; z-index: 10; }
-        
-        /* 공 및 그림자 */
         #ball { position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; z-index: 25; transform: translate(-50%, -50%); box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3); }
         #shadow { position: absolute; width: 16px; height: 8px; background: rgba(0,0,0,0.5); border-radius: 50%; z-index: 5; transform: translate(-50%, -50%); pointer-events: none; }
-
-        /* 탁구채 비주얼 */
         .paddle { position: absolute; width: 90px; height: 110px; transform: translate(-50%, -50%); z-index: 35; pointer-events: none; }
-        
-        /* 게임 메시지 */
         #msg { position: absolute; top: 55%; width: 100%; text-align: center; font-size: 40px; font-weight: bold; color: #fff; z-index: 100; display: none; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
         #overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200; }
         .btn { padding: 15px 50px; background: #f1c40f; border: none; font-weight: bold; cursor: pointer; border-radius: 30px; font-size: 18px; transition: 0.2s; }
-        .btn:hover { transform: scale(1.1); background: #fff; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -42,17 +29,14 @@
         <div class="score-card"><div class="val" id="us">0</div><div class="name">YOU</div></div>
         <div class="score-card"><div class="val" id="cs">0</div><div class="name">CPU</div></div>
     </div>
-
     <div id="table">
         <div id="net"></div>
         <div id="shadow"></div>
         <div id="ball"></div>
-        
         <svg id="user-pad" class="paddle" viewBox="0 0 100 120">
             <rect x="42" y="80" width="16" height="40" fill="#5d4037" rx="2"/>
             <circle cx="50" cy="45" r="45" fill="#e74c3c" stroke="#222" stroke-width="3"/>
         </svg>
-
         <svg id="cpu-pad" class="paddle" viewBox="0 0 100 120">
             <rect x="42" y="0" width="16" height="40" fill="#5d4037" rx="2"/>
             <circle cx="50" cy="75" r="45" fill="#3498db" stroke="#222" stroke-width="3"/>
@@ -67,6 +51,23 @@
 </div>
 
 <script>
+// 사운드 시스템 (Web Audio API)
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playHitSound(freq = 600, duration = 0.1) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
 const table = document.getElementById('table');
 const ballEl = document.getElementById('ball');
 const shadowEl = document.getElementById('shadow');
@@ -76,28 +77,19 @@ const msgEl = document.getElementById('msg');
 const overlay = document.getElementById('overlay');
 
 let state = {
-    running: true, 
-    score: { u: 0, c: 0 },
+    running: true, score: { u: 0, c: 0 },
     ball: { x: 210, y: 650, z: 25, dx: 0, dy: 0, dz: 0, drag: 1, spin: 'none' },
     user: { x: 210, y: 700, vx: 0, vy: 0, px: 210, py: 700 },
-    cpu: { x: 210, y: 50 }, 
-    gameS: 'WAIT', 
-    lastH: '', 
-    bounce: 0,
-    mBtns: 0
+    cpu: { x: 210, y: 50 }, gameS: 'WAIT', lastH: '', bounce: 0, mBtns: 0
 };
 
 function resetGame() {
-    state.score = { u: 0, c: 0 };
-    updateScore();
-    overlay.style.display = 'none';
-    resetRound();
+    state.score = { u: 0, c: 0 }; updateScore();
+    overlay.style.display = 'none'; resetRound();
 }
 
 function resetRound() {
-    state.running = true; 
-    state.gameS = 'WAIT'; 
-    state.bounce = 0;
+    state.running = true; state.gameS = 'WAIT'; state.bounce = 0;
     state.ball = { x: 210, y: 650, z: 25, dx: 0, dy: 0, dz: 0, drag: 1, spin: 'none' };
     msgEl.style.display = 'none';
     if (!loopId) loop();
@@ -109,83 +101,72 @@ function loop() {
     loopId = requestAnimationFrame(loop);
 
     if (state.gameS !== 'WAIT') {
-        // 공 이동 및 커트 저항 로직
         state.ball.x += state.ball.dx * state.ball.drag;
         state.ball.y += state.ball.dy * state.ball.drag;
-        state.ball.dz -= 0.24; // 중력
+        state.ball.dz -= 0.24; 
         state.ball.z += state.ball.dz;
-        
-        // 공기 저항 회복 (커트 후 점진적 가속)
         if (state.ball.drag < 1) state.ball.drag += 0.006;
     }
 
-    // 바운드 판정
     if (state.ball.z <= 0) {
         state.ball.z = 0;
         state.ball.dz = Math.abs(state.ball.dz) * 0.65;
         state.bounce++;
+        playHitSound(400, 0.05); // 테이블 바운드 소리
         checkRules();
     }
 
-    // 네트 충돌 판정
-    if (Math.abs(state.ball.y - H()/2) < 10 && state.ball.z < 15) {
-        endPoint(state.lastH === 'cpu');
-    }
+    if (Math.abs(state.ball.y - H()/2) < 10 && state.ball.z < 15) endPoint(state.lastH === 'cpu');
 
-    // 유저 타격 판정
     if (state.ball.z < 70 && state.ball.y > H()/2) {
         let dist = Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y);
         let speed = Math.hypot(state.user.vx, state.user.vy);
-        if (dist < 65 && speed > 2 && (state.gameS === 'TOSS' || state.ball.dy > 0)) {
-            hit('user', speed);
-        }
+        if (dist < 65 && speed > 1.5 && (state.gameS === 'TOSS' || state.ball.dy > 0)) hit('user', speed);
     }
 
-    // CPU 지능형 AI (인간적인 실수 포함)
     state.cpu.x += (state.ball.x - state.cpu.x) * 0.09; 
-    state.cpu.y = 80;
     if (state.ball.y < 120 && state.ball.dy < 0 && state.ball.z < 65) {
         if (Math.abs(state.ball.x - state.cpu.x) < 60) {
-            // CPU 실수: 드라이브 공을 받을 때 7% 확률로 네트에 걸림
             if (state.ball.spin === 'drive' && Math.random() < 0.07) {
                 state.ball.dy = 3; state.ball.dz = 1;
-            } else {
-                hit('cpu', 11);
-            }
-        } else if (state.ball.y < 30) {
-            endPoint(true); // AI가 공을 놓침
-        }
+            } else { hit('cpu', 10); }
+        } else if (state.ball.y < 30) endPoint(true);
     }
 
-    // 아웃 판정
     if (state.ball.y < -80 || state.ball.y > H() + 80 || state.ball.x < -80 || state.ball.x > W() + 80) {
         endPoint(state.lastH === 'user' && state.bounce > 0);
     }
-
     draw();
 }
 
 function hit(who, speed) {
     state.lastH = who; state.bounce = 0; state.gameS = 'RALLY';
+    playHitSound(800, 0.1); // 라켓 타격 소리
+
     if (who === 'user') {
-        let p = speed * 1.7; // 전체적인 반발력 상향
-        state.ball.dx = (state.user.x - state.user.px) * 0.6;
+        // [물리 개선] 스윙 속도(speed)를 비거리와 직접 연동
+        // 적정 속도(약 8~12)일 때 테이블 끝으로 가도록 설계
+        let powerBase = speed * 1.1; 
+        state.ball.dx = (state.user.vx) * 0.8; // 대각선 휘두름 방향 반영
         
-        if (state.mBtns === 1) { // 드라이브 (좌클릭)
-            state.ball.spin = 'drive'; state.ball.dy = -p; state.ball.dz = 7; state.ball.drag = 1.0;
-        } else if (state.mBtns === 2) { // 커트 (우클릭)
-            state.ball.spin = 'cut'; state.ball.dy = -p * 1.1; state.ball.dz = 4; state.ball.drag = 0.65;
-        } else { // 스매시 (그냥 휘두름)
-            state.ball.spin = 'none'; state.ball.dy = -p * 1.9; state.ball.dz = 4.5; state.ball.drag = 1.1;
+        if (state.mBtns === 1) { // 드라이브
+            state.ball.spin = 'drive'; 
+            state.ball.dy = -Math.max(5, powerBase); // 살살 휘두르면 네트행, 세면 오버
+            state.ball.dz = 6; state.ball.drag = 1.0;
+        } else if (state.mBtns === 2) { // 커트
+            state.ball.spin = 'cut'; 
+            state.ball.dy = -Math.max(4, powerBase * 0.8); 
+            state.ball.dz = 3.5; state.ball.drag = 0.65;
+        } else { // 스매시
+            state.ball.spin = 'none'; 
+            state.ball.dy = -Math.max(7, powerBase * 1.4); 
+            state.ball.dz = 4; state.ball.drag = 1.1;
         }
     } else {
-        // CPU 대응
-        state.ball.dy = 11 + Math.random() * 6;
+        state.ball.dy = 10 + Math.random() * 5;
         state.ball.dz = 5;
-        state.ball.dx = (Math.random() - 0.5) * 11;
+        state.ball.dx = (Math.random() - 0.5) * 10;
         state.ball.drag = 1;
-        // 유저 드라이브에 대한 대응 실패 확률
-        if (state.ball.spin === 'drive' && Math.random() < 0.25) state.ball.dx *= 2.2;
     }
 }
 
@@ -199,15 +180,10 @@ function draw() {
     ballEl.style.left = state.ball.x + 'px';
     ballEl.style.top = (state.ball.y - state.ball.z) + 'px';
     ballEl.style.transform = `translate(-50%, -50%) scale(${1 + state.ball.z/160})`;
-    
-    // 그림자 구현: 높이에 비례해 크기 조절 및 투명도 조절
     shadowEl.style.left = state.ball.x + 'px';
     shadowEl.style.top = state.ball.y + 'px';
-    const sScale = 1 + state.ball.z/100;
-    const sOpacity = Math.max(0.1, 0.6 - state.ball.z/150);
-    shadowEl.style.transform = `translate(-50%, -50%) scale(${sScale})`;
-    shadowEl.style.opacity = sOpacity;
-
+    shadowEl.style.transform = `translate(-50%, -50%) scale(${1 + state.ball.z/100})`;
+    shadowEl.style.opacity = Math.max(0.1, 0.6 - state.ball.z/150);
     userPad.style.left = state.user.x + 'px';
     userPad.style.top = state.user.y + 'px';
     cpuPad.style.left = state.cpu.x + 'px';
@@ -220,12 +196,8 @@ function endPoint(uWin) {
     updateScore();
     msgEl.innerText = uWin ? "POINT!" : "FAULT!";
     msgEl.style.display = 'block';
-
-    if (state.score.u >= 11 || state.score.c >= 11) {
-        setTimeout(showFinal, 1000);
-    } else {
-        setTimeout(resetRound, 1000);
-    }
+    if (state.score.u >= 11 || state.score.c >= 11) setTimeout(showFinal, 1000);
+    else setTimeout(resetRound, 1000);
 }
 
 function showFinal() {
@@ -241,10 +213,7 @@ function updateScore() {
 
 window.addEventListener('mousedown', e => {
     state.mBtns = e.buttons;
-    if (state.gameS === 'WAIT') {
-        state.gameS = 'TOSS'; 
-        state.ball.dz = 8.5;
-    }
+    if (state.gameS === 'WAIT') { state.gameS = 'TOSS'; state.ball.dz = 8; }
 });
 window.addEventListener('mouseup', () => state.mBtns = 0);
 window.addEventListener('mousemove', e => {
