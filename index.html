@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ITTF Pro Masters v10.5</title>
+    <title>ITTF Pro Masters v10.6</title>
     <style>
         :root { --table: #1e5d2f; --line: #ffffff; --accent: #f1c40f; }
         body { margin: 0; background: #111; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Pretendard', sans-serif; touch-action: none; color: white; }
         #menu { position: absolute; inset: 0; background: rgba(0,0,0,0.98); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         #menu h1 { color: var(--accent); font-size: 42px; margin-bottom: 5px; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
-        .rule-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; max-width: 580px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.6; font-size: 13px; color: #ccc; text-align: left; }
+        .rule-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; max-width: 600px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.6; font-size: 13px; color: #ccc; text-align: left; }
         .rule-box h3 { margin: 8px 0 4px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; font-size: 15px; }
         .rule-box b { color: var(--accent); }
         .rule-box ul { margin: 5px 0; padding-left: 20px; }
@@ -33,17 +33,16 @@
 <div id="menu">
     <h1>🏓 ITTF PRO MASTERS</h1>
     <div class="rule-box">
-        <h3>[ 기술 가이드 ]</h3>
+        <h3>[ 3대 핵심 기술 ]</h3>
         <ul>
-            <li><b>⚡ 스매시:</b> 마우스를 매우 빠르게 휘두르세요. 공이 낮고 강력하게 상대 탁구대 <b>끝(모서리)</b>으로 꽂힙니다. 결정구로 사용하세요.</li>
-            <li><b>☄️ 드라이브 (좌클릭):</b> 공격적인 회전을 줍니다. 적당한 속도로 구석을 공략하기 좋습니다.</li>
-            <li><b>🛡️ 커트 (우클릭):</b> 공을 안전하게 넘깁니다. 네트 근처에 <b>짧게 떨어지므로</b> 상대의 공격을 방해할 때 효과적입니다.</li>
+            <li><b>⚡ 스매시 (빠른 스윙):</b> 힘 조절이 생명입니다! 적당히 세면 테이블 <b>끝(Edge)</b>에 꽂히지만, 너무 과하면 탁구대를 벗어납니다.</li>
+            <li><b>☄️ 드라이브 (좌클릭 유지):</b> 안정 지향 기술입니다. 궤적이 높아 <b>네트에 거의 걸리지 않으며</b>, 바운스가 커서 상대가 받아치기 어렵습니다.</li>
+            <li><b>🛡️ 커트 (우클릭 유지):</b> 수비의 정석입니다. 공이 상대 테이블에 닿는 순간 <b>바운스가 매우 낮고 짧게</b> 깔려 공격 기회를 차단합니다.</li>
         </ul>
-        <h3>[ 게임 규칙 ]</h3>
+        <h3>[ 승리 조건 ]</h3>
         <ul>
-            <li><b>2 BOUND:</b> 공이 바닥에 닿기 전 자기 코트에서 2번 튕기면 실점.</li>
-            <li><b>MISS:</b> 상대 탁구대 위를 맞추지 못하고 밖으로 나가면 실점.</li>
-            <li><b>DEUCE:</b> 10:10부터는 2점을 먼저 앞서야 승리합니다.</li>
+            <li>11점을 먼저 득점하세요. (10:10 듀스 시 2점 차 승리)</li>
+            <li>난이도가 높을수록 CPU가 이 3가지 기술을 영리하게 섞어서 사용합니다.</li>
         </ul>
     </div>
     <div class="btn-group">
@@ -102,8 +101,8 @@ let state = {
 function startGame(diff) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     state.cpu.mode = diff;
-    if (diff === 'abs') { state.cpu.speed = 0.13; state.cpu.delayLimit = 0.03; }
-    else if (diff === 'pro') { state.cpu.speed = 0.08; state.cpu.delayLimit = 0.15; }
+    if (diff === 'abs') { state.cpu.speed = 0.14; state.cpu.delayLimit = 0.02; }
+    else if (diff === 'pro') { state.cpu.speed = 0.09; state.cpu.delayLimit = 0.12; }
     else { state.cpu.speed = 0.04; state.cpu.delayLimit = 0.3; }
     document.getElementById('menu').style.display = 'none';
     state.score = { u: 0, c: 0 }; state.server = 'user';
@@ -114,8 +113,7 @@ function startGame(diff) {
 function resetRound() {
     const { u, c } = state.score;
     if ((u >= 11 || c >= 11) && Math.abs(u - c) >= 2) {
-        state.running = false; document.getElementById('menu').style.display = 'flex';
-        return;
+        state.running = false; document.getElementById('menu').style.display = 'flex'; return;
     }
     state.running = true; state.gameState = 'WAIT_SERVE'; state.bounceHistory = [];
     state.lastHitter = ''; state.spinType = 'none'; state.isServeMode = false;
@@ -136,16 +134,20 @@ function loop() {
     if (state.gameState !== 'WAIT_SERVE') {
         state.ball.x += state.ball.dx; state.ball.y += state.ball.dy;
         state.ball.dz -= 0.25; state.ball.z += state.ball.dz;
+        // 네트 판정
         if (Math.abs(state.ball.y - H()/2) < 8 && state.ball.z < 28) {
             playSound(150, 0.2); state.running = false; msgEl.innerText = "NET!";
-            msgEl.style.display = 'block'; setTimeout(() => endPoint(state.lastHitter === 'cpu'), 1000);
-            return;
+            msgEl.style.display = 'block'; setTimeout(() => endPoint(state.lastHitter === 'cpu'), 1000); return;
         }
     }
     if (state.ball.z <= 0) {
         state.ball.z = 0;
-        let bFactor = (state.spinType === 'smash') ? 0.9 : 0.6;
-        if (state.spinType === 'cut') { state.ball.dx *= 0.65; state.ball.dy *= 0.75; }
+        // [기술별 바운드 로직] 드라이브는 높게, 커트는 낮게
+        let bFactor = 0.6;
+        if (state.spinType === 'drive') bFactor = 0.85;
+        if (state.spinType === 'cut') bFactor = 0.35;
+        if (state.spinType === 'smash') bFactor = 0.7;
+
         state.ball.dz = Math.abs(state.ball.dz) * bFactor;
         const isUserSide = state.ball.y > H()/2;
         const inTable = (state.ball.x > 0 && state.ball.x < W() && state.ball.y > 0 && state.ball.y < H());
@@ -161,16 +163,18 @@ function loop() {
             setTimeout(() => determinePoint(), 1000);
         }
     }
+    // CPU 이동
     if (state.ball.dy < 0) {
         state.cpu.reactionDelay += 0.016;
         if (state.cpu.reactionDelay > state.cpu.delayLimit) { 
-            let targetX = state.ball.x + (state.ball.dx * 2.5); 
+            let targetX = state.ball.x + (state.ball.dx * 2.2); 
             state.cpu.x += (targetX - state.cpu.x) * state.cpu.speed; 
         }
     } else {
         state.cpu.reactionDelay = 0; state.cpu.x += (W()/2 - state.cpu.x) * 0.02; 
     }
     state.cpu.y = 80;
+    // 충돌 판정 (유저/CPU)
     if (state.ball.z > 0 && state.ball.z < 85 && state.ball.y > H()/2) {
         let speed = Math.hypot(state.user.vx, state.user.vy);
         if (Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y) < 70 && speed > 2.5) {
@@ -198,28 +202,44 @@ function hitBall(hitter, swingSpeed) {
     const isServe = state.gameState === 'TOSSING' || (hitter === 'cpu' && state.gameState === 'CPU_SERVE_TOSS');
     state.gameState = 'RALLY'; state.lastHitter = hitter; state.isServeMode = isServe;
     playSound(600, 0.1);
+    
     if (hitter === 'user') {
         state.ball.dx = Math.max(-14, Math.min(14, state.user.vx * 0.7));
-        // [기술적 특징 재조정]
-        if (swingSpeed > 28) { // 스매시: 직선적이고 테이블 끝 조준
-            state.spinType = 'smash'; 
-            state.ball.dy = -swingSpeed * 1.55; 
-            state.ball.dz = 2.5;
-            // 테이블 안으로 들어올 확률 보정 (너무 무리하지 않은 샷일 때)
-            if (Math.abs(state.ball.dy) > 45) state.ball.dy *= 0.85; 
-        } else if (mouseButtons === 1) { // 드라이브
-            state.spinType = 'drive'; state.ball.dy = -swingSpeed * 1.25; state.ball.dz = 5.8; 
-        } else if (mouseButtons === 2) { // 커트: 반발력 강화 + 짧게 낙하
-            state.spinType = 'cut'; state.ball.dy = -13 - (swingSpeed * 0.4); state.ball.dz = 4.5;
-        } else { state.spinType = 'none'; state.ball.dy = -18; state.ball.dz = 4.8; }
+        
+        // [유저 기술 로직]
+        if (swingSpeed > 28) { // 1. 스매시
+            state.spinType = 'smash';
+            if (swingSpeed < 45) { // 적당한 강도 -> 테이블 끝(Edge) 조준
+                state.ball.dy = -swingSpeed * 1.5;
+                state.ball.dz = 2.0;
+            } else { // 너무 센 강도 -> 오버 파워(넘어감)
+                state.ball.dy = -swingSpeed * 1.8;
+                state.ball.dz = 3.5;
+            }
+        } else if (mouseButtons === 1) { // 2. 드라이브
+            state.spinType = 'drive';
+            state.ball.dy = -swingSpeed * 1.1;
+            state.ball.dz = 7.5; // 높은 궤적 -> 네트 통과 확률 높음
+        } else if (mouseButtons === 2) { // 3. 커트
+            state.spinType = 'cut';
+            state.ball.dy = -12 - (swingSpeed * 0.4);
+            state.ball.dz = 3.5; // 낮은 궤적
+        } else {
+            state.spinType = 'none'; state.ball.dy = -18; state.ball.dz = 4.5;
+        }
         if (isServe) { state.ball.dy = -13; state.ball.dz = state.ball.z < 25 ? -2.5 : -4; }
     } else {
+        // [CPU 기술 로직]
         let rand = Math.random();
         state.ball.dx = (Math.random() - 0.5) * (isServe ? 6 : (state.cpu.mode === 'abs' ? 18 : 12));
         if (state.cpu.mode === 'abs' && !isServe) {
-            if (rand < 0.25) { state.spinType = 'smash'; state.ball.dy = 40; state.ball.dz = 2.2; } // CPU 스매시
-            else if (rand < 0.55) { state.spinType = 'cut'; state.ball.dy = 12; state.ball.dz = 4.2; } // CPU 커트
-            else { state.spinType = 'drive'; state.ball.dy = 22; state.ball.dz = 6; }
+            if (rand < 0.25) { // 스매시
+                state.spinType = 'smash'; state.ball.dy = 38; state.ball.dz = 2.0;
+            } else if (rand < 0.55) { // 커트
+                state.spinType = 'cut'; state.ball.dy = 11; state.ball.dz = 3.8;
+            } else { // 드라이브
+                state.spinType = 'drive'; state.ball.dy = 20; state.ball.dz = 7.0;
+            }
         } else {
             state.ball.dy = isServe ? 12 : 14 + Math.random() * 8; state.ball.dz = isServe ? -3.2 : 5;
         }
@@ -261,6 +281,8 @@ window.addEventListener('mousedown', e => {
     if (state.gameState === 'WAIT_SERVE' && state.server === 'user') { state.gameState = 'TOSSING'; state.ball.dz = 8; }
 });
 window.addEventListener('mouseup', () => mouseButtons = 0);
+window.addEventListener('contextmenu', e => e.preventDefault()); // 우클릭 메뉴 방지
+
 court.addEventListener('mousemove', e => {
     const rect = court.getBoundingClientRect();
     state.user.x = e.clientX - rect.left;
