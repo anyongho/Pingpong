@@ -3,95 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ITTF World Tour - Ping Pong Professional</title>
+    <title>ITTF 마스터즈 v5.1</title>
     <style>
-        :root { --table-blue: #1e5d2f; --floor: #1a1a1a; --line: #ffffff; }
-        body { margin: 0; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Pretendard', sans-serif; color: white; }
-        #stadium { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2c3e50 0%, #000 100%); }
-        #scoreboard { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; z-index: 50; }
-        .score-card { background: #111; border: 2px solid #444; padding: 15px; border-radius: 10px; text-align: center; width: 80px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .score-card .val { font-size: 40px; font-weight: bold; color: #f1c40f; line-height: 1; }
-        .score-card .name { font-size: 11px; color: #888; margin-top: 8px; letter-spacing: 1px; }
-        #table { position: relative; width: 420px; height: 85vh; background: var(--table-blue); border: 6px solid var(--line); box-shadow: 0 40px 80px rgba(0,0,0,0.9); perspective: 1200px; }
-        #net { position: absolute; top: 50%; width: 108%; left: -4%; height: 5px; background: rgba(255,255,255,0.3); border-top: 2px solid #fff; z-index: 10; }
-        #ball { position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; z-index: 25; transform: translate(-50%, -50%); box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3); }
-        #shadow { position: absolute; width: 16px; height: 8px; background: rgba(0,0,0,0.5); border-radius: 50%; z-index: 5; transform: translate(-50%, -50%); pointer-events: none; }
-        .paddle { position: absolute; width: 90px; height: 110px; transform: translate(-50%, -50%); z-index: 35; pointer-events: none; }
-        #msg { position: absolute; top: 55%; width: 100%; text-align: center; font-size: 40px; font-weight: bold; color: #fff; z-index: 100; display: none; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
-        #overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200; }
-        .btn { padding: 15px 50px; background: #f1c40f; border: none; font-weight: bold; cursor: pointer; border-radius: 30px; font-size: 18px; transition: 0.2s; }
+        :root { --table: #1e5d2f; --line: #ffffff; --accent: #f1c40f; }
+        body { margin: 0; background: #000; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Pretendard', sans-serif; touch-action: none; color: white; }
+        
+        /* 초기 화면 (메뉴) 스타일 */
+        #menu { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            padding: 20px; text-align: center;
+        }
+        #menu h1 { color: var(--accent); font-size: 48px; margin-bottom: 20px; text-shadow: 0 0 20px rgba(241, 196, 15, 0.5); }
+        
+        .rule-box { 
+            background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px; 
+            max-width: 500px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.2);
+            line-height: 1.8; font-size: 15px; color: #ddd; text-align: left;
+        }
+        .rule-box b { color: var(--accent); }
+        
+        .menu-btn { 
+            padding: 18px 60px; border: 2px solid var(--accent); background: var(--accent); 
+            color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; 
+            font-size: 20px; transition: all 0.3s;
+        }
+        .menu-btn:hover { background: transparent; color: var(--accent); transform: scale(1.05); }
+
+        /* 게임 화면 레이아웃 */
+        #court { flex: 1; position: relative; background: var(--table); border: 10px solid var(--line); margin: 5px 40px; perspective: 1200px; overflow: hidden; cursor: none; }
+        #net { position: absolute; top: 50%; width: 100%; height: 4px; background: rgba(255,255,255,0.7); border-top: 1px solid #fff; z-index: 5; }
+        #hud { position: absolute; top: 15px; width: 100%; display: flex; justify-content: space-around; font-size: 24px; font-weight: bold; z-index: 30; pointer-events: none; text-shadow: 2px 2px 4px #000; }
+        #ball { position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+        .paddle { position: absolute; width: 110px; height: 130px; transform: translate(-50%, -50%); z-index: 20; pointer-events: none; }
+        #msg { position: absolute; top: 60%; width: 100%; text-align: center; font-size: 35px; color: var(--accent); font-weight: bold; display: none; z-index: 40; }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-<div id="stadium">
-    <div id="scoreboard">
-        <div class="score-card"><div class="val" id="us">0</div><div class="name">YOU</div></div>
-        <div class="score-card"><div class="val" id="cs">0</div><div class="name">CPU</div></div>
+<div id="menu">
+    <h1>🏓 ITTF MASTERS</h1>
+    <div class="rule-box">
+        <b>[ 게임 규칙 설명 ]</b><br>
+        1. <b>서브권:</b> 각 선수당 2회씩 서브 후 교대합니다. (듀스 시 1회 교대)<br>
+        2. <b>서브 방법:</b> 클릭으로 토스 후, 공이 내려올 때 적당한 높이에서 타격해야 합니다. 너무 빠르면 오버, 너무 늦으면 네트에 걸립니다.<br>
+        3. <b>득점:</b> 상대방이 친 공이 내 테이블에 닿지 않고 나가면 득점입니다.<br>
+        4. <b>조작:</b> 마우스 이동으로 라켓 조절. 좌클릭(드라이브), 우클릭(커트), 클릭없음(스매시).
     </div>
-    <div id="table">
-        <div id="net"></div>
-        <div id="shadow"></div>
-        <div id="ball"></div>
-        <svg id="user-pad" class="paddle" viewBox="0 0 100 120">
-            <rect x="42" y="80" width="16" height="40" fill="#5d4037" rx="2"/>
-            <circle cx="50" cy="45" r="45" fill="#e74c3c" stroke="#222" stroke-width="3"/>
-        </svg>
-        <svg id="cpu-pad" class="paddle" viewBox="0 0 100 120">
-            <rect x="42" y="0" width="16" height="40" fill="#5d4037" rx="2"/>
-            <circle cx="50" cy="75" r="45" fill="#3498db" stroke="#222" stroke-width="3"/>
-        </svg>
-        <div id="msg">POINT!</div>
-    </div>
+    <button class="menu-btn" onclick="startGame()">게임 시작</button>
 </div>
 
-<div id="overlay">
-    <h1 id="final-res" style="color:#f1c40f; font-size: 48px;">MATCH OVER</h1>
-    <button class="btn" onclick="resetGame()">REMATCH</button>
+<div id="hud">
+    <div>나 <span id="us">0</span></div>
+    <div id="status">대기</div>
+    <div>상대 <span id="cs">0</span></div>
+</div>
+
+<div id="court">
+    <div id="net"></div>
+    <div id="ball"></div>
+    <div id="msg">OUT</div>
+    
+    <svg id="user-pad" class="paddle" viewBox="0 0 100 120">
+        <rect x="42" y="80" width="16" height="40" fill="#8d6e63" rx="2"/>
+        <circle cx="50" cy="45" r="45" fill="#d32f2f" stroke="#333" stroke-width="3"/>
+    </svg>
+    <svg id="cpu-pad" class="paddle" viewBox="0 0 100 120">
+        <rect x="42" y="0" width="16" height="40" fill="#8d6e63" rx="2"/>
+        <circle cx="50" cy="75" r="45" fill="#1976d2" stroke="#333" stroke-width="3"/>
+    </svg>
 </div>
 
 <script>
-// 사운드 시스템 (Web Audio API)
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playHitSound(freq = 600, duration = 0.1) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + duration);
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-}
-
-const table = document.getElementById('table');
+const court = document.getElementById('court');
 const ballEl = document.getElementById('ball');
-const shadowEl = document.getElementById('shadow');
-const userPad = document.getElementById('user-pad');
-const cpuPad = document.getElementById('cpu-pad');
+const userEl = document.getElementById('user-pad');
+const cpuEl = document.getElementById('cpu-pad');
 const msgEl = document.getElementById('msg');
-const overlay = document.getElementById('overlay');
+const statusEl = document.getElementById('status');
 
 let state = {
-    running: true, score: { u: 0, c: 0 },
-    ball: { x: 210, y: 650, z: 25, dx: 0, dy: 0, dz: 0, drag: 1, spin: 'none' },
-    user: { x: 210, y: 700, vx: 0, vy: 0, px: 210, py: 700 },
-    cpu: { x: 210, y: 50 }, gameS: 'WAIT', lastH: '', bounce: 0, mBtns: 0
+    running: false, score: { u: 0, c: 0 },
+    ball: { x: 0, y: 0, z: 0, dx: 0, dy: 0, dz: 0 },
+    user: { x: 0, y: 0, vx: 0, vy: 0, prevX: 0, prevY: 0 },
+    cpu: { x: 0, y: 0 },
+    gameState: 'WAIT_SERVE', 
+    server: 'user', 
+    serveCount: 0,   
+    lastHitter: '', bounceHistory: []
 };
 
-function resetGame() {
-    state.score = { u: 0, c: 0 }; updateScore();
-    overlay.style.display = 'none'; resetRound();
+function startGame() {
+    document.getElementById('menu').style.display = 'none';
+    state.score = { u: 0, c: 0 };
+    state.server = 'user';
+    state.serveCount = 0;
+    document.getElementById('us').innerText = "0";
+    document.getElementById('cs').innerText = "0";
+    resetRound();
 }
 
 function resetRound() {
-    state.running = true; state.gameS = 'WAIT'; state.bounce = 0;
-    state.ball = { x: 210, y: 650, z: 25, dx: 0, dy: 0, dz: 0, drag: 1, spin: 'none' };
-    msgEl.style.display = 'none';
+    state.running = true; state.gameState = 'WAIT_SERVE'; state.bounceHistory = [];
+    state.lastHitter = '';
+    
+    if (state.server === 'user') {
+        state.ball = { x: W()/2, y: H()-100, z: 25, dx: 0, dy: 0, dz: 0 };
+        statusEl.innerText = "내 서브 차례";
+    } else {
+        state.ball = { x: W()/2, y: 100, z: 25, dx: 0, dy: 0, dz: 0 };
+        statusEl.innerText = "상대 서브 대기";
+        setTimeout(() => cpuServe(), 1500);
+    }
     if (!loopId) loop();
 }
 
@@ -100,134 +123,132 @@ function loop() {
     if (!state.running) { loopId = null; return; }
     loopId = requestAnimationFrame(loop);
 
-    if (state.gameS !== 'WAIT') {
-        state.ball.x += state.ball.dx * state.ball.drag;
-        state.ball.y += state.ball.dy * state.ball.drag;
-        state.ball.dz -= 0.24; 
+    if (state.gameState !== 'WAIT_SERVE') {
+        state.ball.x += state.ball.dx;
+        state.ball.y += state.ball.dy;
+        state.ball.dz -= 0.22; 
         state.ball.z += state.ball.dz;
-        if (state.ball.drag < 1) state.ball.drag += 0.006;
     }
 
     if (state.ball.z <= 0) {
         state.ball.z = 0;
-        state.ball.dz = Math.abs(state.ball.dz) * 0.65;
-        state.bounce++;
-        playHitSound(400, 0.05); // 테이블 바운드 소리
-        checkRules();
+        state.ball.dz = Math.abs(state.ball.dz) * 0.6;
+        const isUserSide = state.ball.y > H()/2;
+        const inTable = (state.ball.x > 0 && state.ball.x < W() && state.ball.y > 0 && state.ball.y < H());
+        if (inTable) state.bounceHistory.push(isUserSide ? 'USER' : 'CPU');
+        else determinePoint();
     }
 
-    if (Math.abs(state.ball.y - H()/2) < 10 && state.ball.z < 15) endPoint(state.lastH === 'cpu');
-
-    if (state.ball.z < 70 && state.ball.y > H()/2) {
+    if (state.ball.z > 0 && state.ball.z < 85 && state.ball.y > H()/2) {
         let dist = Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y);
         let speed = Math.hypot(state.user.vx, state.user.vy);
-        if (dist < 65 && speed > 1.5 && (state.gameS === 'TOSS' || state.ball.dy > 0)) hit('user', speed);
+        if (dist < 65 && speed > 1.8) {
+            if (state.gameState === 'TOSSING' || (state.gameState === 'RALLY' && state.ball.dy > 0)) {
+                hitBall('user', speed);
+            }
+        }
     }
 
-    state.cpu.x += (state.ball.x - state.cpu.x) * 0.09; 
-    if (state.ball.y < 120 && state.ball.dy < 0 && state.ball.z < 65) {
-        if (Math.abs(state.ball.x - state.cpu.x) < 60) {
-            if (state.ball.spin === 'drive' && Math.random() < 0.07) {
-                state.ball.dy = 3; state.ball.dz = 1;
-            } else { hit('cpu', 10); }
-        } else if (state.ball.y < 30) endPoint(true);
-    }
-
-    if (state.ball.y < -80 || state.ball.y > H() + 80 || state.ball.x < -80 || state.ball.x > W() + 80) {
-        endPoint(state.lastH === 'user' && state.bounce > 0);
+    state.cpu.x += (state.ball.x - state.cpu.x) * 0.12;
+    state.cpu.y = 80;
+    if (state.ball.y < 150 && state.ball.dy < 0 && state.ball.z < 70) {
+        if (Math.abs(state.ball.x - state.cpu.x) < 65) {
+            if (state.gameState === 'RALLY' && Math.random() < 0.05) return; 
+            hitBall('cpu', 12);
+        }
     }
     draw();
 }
 
-function hit(who, speed) {
-    state.lastH = who; state.bounce = 0; state.gameS = 'RALLY';
-    playHitSound(800, 0.1); // 라켓 타격 소리
-
-    if (who === 'user') {
-        // [물리 개선] 스윙 속도(speed)를 비거리와 직접 연동
-        // 적정 속도(약 8~12)일 때 테이블 끝으로 가도록 설계
-        let powerBase = speed * 1.1; 
-        state.ball.dx = (state.user.vx) * 0.8; // 대각선 휘두름 방향 반영
-        
-        if (state.mBtns === 1) { // 드라이브
-            state.ball.spin = 'drive'; 
-            state.ball.dy = -Math.max(5, powerBase); // 살살 휘두르면 네트행, 세면 오버
-            state.ball.dz = 6; state.ball.drag = 1.0;
-        } else if (state.mBtns === 2) { // 커트
-            state.ball.spin = 'cut'; 
-            state.ball.dy = -Math.max(4, powerBase * 0.8); 
-            state.ball.dz = 3.5; state.ball.drag = 0.65;
-        } else { // 스매시
-            state.ball.spin = 'none'; 
-            state.ball.dy = -Math.max(7, powerBase * 1.4); 
-            state.ball.dz = 4; state.ball.drag = 1.1;
-        }
-    } else {
-        state.ball.dy = 10 + Math.random() * 5;
-        state.ball.dz = 5;
-        state.ball.dx = (Math.random() - 0.5) * 10;
-        state.ball.drag = 1;
-    }
+function determinePoint() {
+    if (!state.running) return;
+    const bh = state.bounceHistory;
+    const lastH = state.lastHitter;
+    if (lastH === 'user') endPoint(bh[bh.length-1] === 'CPU');
+    else if (lastH === 'cpu') endPoint(bh[bh.length-1] !== 'USER');
+    else endPoint(false);
 }
 
-function checkRules() {
-    const isUserSide = state.ball.y > H()/2;
-    if (state.gameS === 'TOSS' && !isUserSide) endPoint(false);
-    if (state.bounce > 1) endPoint(state.lastH === 'user');
+function hitBall(hitter, swingSpeed) {
+    const isServe = state.gameState === 'TOSSING' || (hitter === 'cpu' && state.gameState === 'CPU_SERVE_TOSS');
+    state.gameState = 'RALLY';
+    state.lastHitter = hitter;
+
+    if (hitter === 'user') {
+        state.ball.dx = (state.user.x - state.user.prevX) * 0.6;
+        if (isServe) {
+            if (state.ball.z > 45) { state.ball.dy = -28; state.ball.dz = -1; }
+            else if (state.ball.z < 15) { state.ball.dy = -8; state.ball.dz = 1; }
+            else { state.ball.dy = -18; state.ball.dz = -2; }
+        } else {
+            let power = Math.max(swingSpeed * 1.6, 20);
+            state.ball.dy = -power; state.ball.dz = 5;
+        }
+    } else {
+        state.ball.dx = (Math.random() - 0.5) * 10;
+        state.ball.dy = isServe ? 18 : 15 + Math.random()*10;
+        state.ball.dz = isServe ? -2 : 5;
+    }
+    state.bounceHistory = [];
+}
+
+function cpuServe() {
+    if (state.gameState !== 'WAIT_SERVE') return;
+    state.gameState = 'CPU_SERVE_TOSS';
+    state.ball.dz = 7;
+    setTimeout(() => {
+        if (Math.random() < 0.25) { statusEl.innerText = "상대 실책!"; endPoint(true); return; }
+        hitBall('cpu', 10);
+    }, 600);
+}
+
+function endPoint(userWin) {
+    if (!state.running) return;
+    state.running = false;
+    userWin ? state.score.u++ : state.score.c++;
+    document.getElementById('us').innerText = state.score.u;
+    document.getElementById('cs').innerText = state.score.c;
+    msgEl.innerText = userWin ? "득점!" : "실점!";
+    msgEl.style.display = 'block';
+
+    const isDeuce = state.score.u >= 10 && state.score.c >= 10;
+    state.serveCount++;
+    if (isDeuce || state.serveCount >= 2) {
+        state.server = (state.server === 'user') ? 'cpu' : 'user';
+        state.serveCount = 0;
+    }
+    setTimeout(() => { msgEl.style.display = 'none'; resetRound(); }, 1200);
 }
 
 function draw() {
     ballEl.style.left = state.ball.x + 'px';
     ballEl.style.top = (state.ball.y - state.ball.z) + 'px';
-    ballEl.style.transform = `translate(-50%, -50%) scale(${1 + state.ball.z/160})`;
-    shadowEl.style.left = state.ball.x + 'px';
-    shadowEl.style.top = state.ball.y + 'px';
-    shadowEl.style.transform = `translate(-50%, -50%) scale(${1 + state.ball.z/100})`;
-    shadowEl.style.opacity = Math.max(0.1, 0.6 - state.ball.z/150);
-    userPad.style.left = state.user.x + 'px';
-    userPad.style.top = state.user.y + 'px';
-    cpuPad.style.left = state.cpu.x + 'px';
-    cpuPad.style.top = state.cpu.y + 'px';
+    ballEl.style.transform = `translate(-50%, -50%) scale(${1 + state.ball.z/150})`;
+    userEl.style.left = state.user.x + 'px';
+    userEl.style.top = state.user.y + 'px';
+    cpuEl.style.left = state.cpu.x + 'px';
+    cpuEl.style.top = state.cpu.y + 'px';
 }
 
-function endPoint(uWin) {
-    state.running = false;
-    uWin ? state.score.u++ : state.score.c++;
-    updateScore();
-    msgEl.innerText = uWin ? "POINT!" : "FAULT!";
-    msgEl.style.display = 'block';
-    if (state.score.u >= 11 || state.score.c >= 11) setTimeout(showFinal, 1000);
-    else setTimeout(resetRound, 1000);
-}
-
-function showFinal() {
-    const win = state.score.u >= 11;
-    document.getElementById('final-res').innerText = win ? "MATCH WON!" : "MATCH LOST";
-    overlay.style.display = 'flex';
-}
-
-function updateScore() {
-    document.getElementById('us').innerText = state.score.u;
-    document.getElementById('cs').innerText = state.score.c;
-}
-
-window.addEventListener('mousedown', e => {
-    state.mBtns = e.buttons;
-    if (state.gameS === 'WAIT') { state.gameS = 'TOSS'; state.ball.dz = 8; }
-});
-window.addEventListener('mouseup', () => state.mBtns = 0);
-window.addEventListener('mousemove', e => {
-    const r = table.getBoundingClientRect();
-    state.user.x = e.clientX - r.left;
-    state.user.y = Math.max(H()/2 + 60, e.clientY - r.top);
-    state.user.vx = state.user.x - state.user.px;
-    state.user.vy = state.user.y - state.user.py;
-    state.user.px = state.user.x; state.user.py = state.user.y;
+window.addEventListener('mousedown', () => {
+    if (state.gameState === 'WAIT_SERVE' && state.server === 'user') {
+        state.gameState = 'TOSSING';
+        state.ball.dz = 7.5;
+        statusEl.innerText = "휘두르세요!";
+    }
 });
 
-const W = () => table.clientWidth;
-const H = () => table.clientHeight;
-resetGame();
+court.addEventListener('mousemove', e => {
+    const rect = court.getBoundingClientRect();
+    state.user.x = e.clientX - rect.left;
+    state.user.y = Math.max(H()/2 + 60, e.clientY - rect.top);
+    state.user.vx = state.user.x - state.user.prevX;
+    state.user.vy = state.user.y - state.user.prevY;
+    state.user.prevX = state.user.x; state.user.prevY = state.user.y;
+});
+
+const W = () => court.clientWidth;
+const H = () => court.clientHeight;
 </script>
 </body>
 </html>
