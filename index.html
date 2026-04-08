@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ITTF Pro Masters v9.0 - Balanced Edition</title>
+    <title>ITTF Pro Masters v9.5 - Final Balance</title>
     <style>
         :root { --table: #1e5d2f; --line: #ffffff; --accent: #f1c40f; }
         body { margin: 0; background: #111; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Pretendard', sans-serif; touch-action: none; color: white; }
@@ -29,9 +29,9 @@
 <div id="menu">
     <h1 id="menu-title">🏓 ITTF PRO MASTERS</h1>
     <div class="rule-box" id="rule-content">
-        • <b>CPU 밸런스 조정:</b> CPU가 인간적인 이동 속도와 반응 시간을 가집니다.<br>
-        • <b>이지 서브:</b> CPU의 서브가 받아치기 적당한 속도로 조정되었습니다.<br>
-        • <b>정밀 타격:</b> 공을 구석으로 보내면 CPU의 범실을 유도할 수 있습니다.
+        • <b>실점 조건:</b> 네트에 걸림 / 자기 진영 2바운드 / 상대 테이블 밖으로 나감.<br>
+        • <b>커트 개선:</b> 반발력을 높여 더 안정적으로 네트를 넘길 수 있습니다.<br>
+        • <b>CPU 속도 하향:</b> CPU가 더 느리게 움직여 빈틈을 공략하기 쉬워졌습니다.
     </div>
     <button class="menu-btn" onclick="startGame()">경기 시작</button>
 </div>
@@ -125,12 +125,13 @@ function loop() {
         state.ball.dz -= 0.25; 
         state.ball.z += state.ball.dz;
         
+        // 네트 판정
         if (Math.abs(state.ball.y - H()/2) < 8 && state.ball.z < 28) {
             playSound(150, 0.2);
             state.running = false;
             msgEl.innerText = "NET!";
             msgEl.style.display = 'block';
-            setTimeout(() => { msgEl.style.display = 'none'; endPoint(state.lastHitter === 'cpu'); }, 1000);
+            setTimeout(() => { msgEl.style.display = 'none'; endPoint(state.lastHitter === 'cpu'); }, 800);
             return;
         }
     }
@@ -138,7 +139,7 @@ function loop() {
     if (state.ball.z <= 0) {
         state.ball.z = 0;
         let bFactor = (state.lastHitter === 'user' && state.spinType === 'drive') ? 0.9 : 0.6;
-        if (state.spinType === 'cut') { state.ball.dx *= 0.5; state.ball.dy *= 0.7; }
+        if (state.spinType === 'cut') { state.ball.dx *= 0.7; state.ball.dy *= 0.8; }
         state.ball.dz = Math.abs(state.ball.dz) * bFactor;
         
         const isUserSide = state.ball.y > H()/2;
@@ -151,27 +152,30 @@ function loop() {
             setTimeout(() => { ballEl.style.transform = `translate(-50%, -50%) scale(1.0)`; }, 50);
 
             const bh = state.bounceHistory;
+            // [버그 수정] 자기 진영 2바운드 즉시 실점 (USER-USER or CPU-CPU)
             if (bh.length >= 2) {
-                if (state.lastHitter === 'user' && bh[bh.length-1] === 'CPU' && bh[bh.length-2] === 'CPU') endPoint(true);
-                else if (state.lastHitter === 'cpu' && bh[bh.length-1] === 'USER' && bh[bh.length-2] === 'USER') endPoint(false);
+                const lastIdx = bh.length - 1;
+                if (bh[lastIdx] === bh[lastIdx-1]) {
+                    // 마지막에 튕긴 진영이 어딘지에 따라 승패 결정
+                    endPoint(bh[lastIdx] === 'CPU'); 
+                    return;
+                }
             }
         } else {
             determinePoint();
         }
     }
 
-    // [CPU 인공지능 개선] 이동 속도와 반응 속도를 하향하여 사용자가 공략 가능하게 함
+    // [CPU 인공지능 개선] 더 느리게 움직이도록 수정
     if (state.ball.dy < 0) {
         state.cpu.reactionDelay += 0.016;
-        // 반응 지연 시간 증가 (0.22초)
-        if (state.cpu.reactionDelay > 0.22) { 
-            let targetX = state.ball.x + (state.ball.dx * 5); // 예측 범위를 줄임
-            // 이동 보간 값(0.07)을 줄여서 채가 천천히 움직이게 함
-            state.cpu.x += (targetX - state.cpu.x) * 0.07; 
+        if (state.cpu.reactionDelay > 0.28) { // 반응 지연 더 늘림
+            let targetX = state.ball.x + (state.ball.dx * 3); 
+            state.cpu.x += (targetX - state.cpu.x) * 0.045; // 이동 속도 대폭 하향 (0.045)
         }
     } else {
         state.cpu.reactionDelay = 0;
-        state.cpu.x += (W()/2 - state.cpu.x) * 0.03; // 중앙 복귀도 천천히
+        state.cpu.x += (W()/2 - state.cpu.x) * 0.02; 
     }
     state.cpu.y = 80;
 
@@ -186,9 +190,8 @@ function loop() {
 
     // 타격 (CPU)
     if (state.ball.y < 150 && state.ball.dy < 0 && state.ball.z < 70 && state.ball.z > 5) {
-        // CPU 타격 범위 안일 때만 타격
         if (Math.abs(state.ball.x - state.cpu.x) < 55) {
-            let failProb = (state.spinType === 'cut') ? 0.25 : 0.08;
+            let failProb = (state.spinType === 'cut') ? 0.3 : 0.1;
             if (state.gameState === 'RALLY' && Math.random() < failProb) return; 
             hitBall('cpu', 10);
         }
@@ -225,25 +228,24 @@ function hitBall(hitter, swingSpeed) {
         else state.spinType = 'none';
 
         if (isServe) {
-            let servePower = state.ball.z < 25 ? -2 : -3.5;
+            let servePower = state.ball.z < 25 ? -2.5 : -4;
             state.ball.dy = -13; state.ball.dz = servePower;
         } else {
             let power = Math.min(26, Math.max(swingSpeed * 1.3, 15));
-            let hitZ = (state.spinType === 'none' && state.spinType === 'cut') ? 2.5 : 4;
             if (state.spinType === 'drive') { state.ball.dy = -power * 1.1; state.ball.dz = 6; }
-            else if (state.spinType === 'cut') { state.ball.dy = -power * 0.6; state.ball.dz = 2.5; }
-            else { state.ball.dy = -power * 1.25; state.ball.dz = hitZ; }
+            // [커트 개선] 반발력을 높여(0.75) 더 잘 넘어가게 함
+            else if (state.spinType === 'cut') { state.ball.dy = -power * 0.75; state.ball.dz = 3.5; } 
+            else { state.ball.dy = -power * 1.25; state.ball.dz = 4; }
         }
     } else {
-        // [CPU 서브 및 타격 약화] 서브 시 속도를 11~12로 제한하여 사용자가 치기 쉽게 함
         if (isServe) { 
-            state.ball.dx = (Math.random() - 0.5) * 6; // 좌우 변화 폭 줄임
+            state.ball.dx = (Math.random() - 0.5) * 6;
             state.ball.dy = 11 + Math.random() * 2; 
             state.ball.dz = -3.2; 
         }
         else { 
-            state.ball.dx = (Math.random() - 0.5) * 12;
-            state.ball.dy = 13 + Math.random() * 8; 
+            state.ball.dx = (Math.random() - 0.5) * 11;
+            state.ball.dy = 12 + Math.random() * 7; 
             state.ball.dz = 5; 
         }
     }
@@ -254,10 +256,7 @@ function cpuServe() {
     if (state.gameState !== 'WAIT_SERVE') return;
     state.gameState = 'CPU_SERVE_TOSS';
     state.ball.dz = 8;
-    setTimeout(() => {
-        // 헛스윙 확률 제거 및 정상 서브 유도
-        hitBall('cpu', 10);
-    }, 700);
+    setTimeout(() => hitBall('cpu', 10), 700);
 }
 
 function endPoint(userWin) {
@@ -267,14 +266,16 @@ function endPoint(userWin) {
     userWin ? state.score.u++ : state.score.c++;
     document.getElementById('us').innerText = state.score.u;
     document.getElementById('cs').innerText = state.score.c;
-    msgEl.innerText = userWin ? "POINT!" : "MISS!";
+    
+    // 점수 표시 후 라운드 초기화
+    if (msgEl.innerText !== "NET!") msgEl.innerText = userWin ? "POINT!" : "MISS!";
     msgEl.style.display = 'block';
 
     state.serveCount++;
     if (state.score.u >= 10 && state.score.c >= 10) state.server = (state.server === 'user') ? 'cpu' : 'user';
     else if (state.serveCount >= 2) { state.server = (state.server === 'user') ? 'cpu' : 'user'; state.serveCount = 0; }
     
-    setTimeout(() => { msgEl.style.display = 'none'; resetRound(); }, 1500);
+    setTimeout(() => { msgEl.style.display = 'none'; resetRound(); }, 1200);
 }
 
 function draw() {
