@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ITTF Pro Masters v10.4</title>
+    <title>ITTF Pro Masters v10.5</title>
     <style>
         :root { --table: #1e5d2f; --line: #ffffff; --accent: #f1c40f; }
         body { margin: 0; background: #111; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Pretendard', sans-serif; touch-action: none; color: white; }
         #menu { position: absolute; inset: 0; background: rgba(0,0,0,0.98); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        #menu h1 { color: var(--accent); font-size: 42px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
-        .rule-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; max-width: 550px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.6; font-size: 13px; color: #ccc; text-align: left; }
-        .rule-box h3 { margin: 10px 0 5px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; font-size: 15px; }
+        #menu h1 { color: var(--accent); font-size: 42px; margin-bottom: 5px; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
+        .rule-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; max-width: 580px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.6; font-size: 13px; color: #ccc; text-align: left; }
+        .rule-box h3 { margin: 8px 0 4px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; font-size: 15px; }
         .rule-box b { color: var(--accent); }
+        .rule-box ul { margin: 5px 0; padding-left: 20px; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .menu-btn { padding: 12px 30px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; font-size: 16px; transition: 0.3s; }
         .menu-btn.pro { background: #e67e22; color: white; }
-        .menu-btn.abs { background: #c0392b; color: white; text-transform: uppercase; box-shadow: 0 0 15px rgba(192,57,43,0.6); }
+        .menu-btn.abs { background: #c0392b; color: white; box-shadow: 0 0 15px rgba(192,57,43,0.6); }
         
         #court { flex: 1; position: relative; background: var(--table); border: 12px solid var(--line); margin: 10px 40px; perspective: 1500px; overflow: hidden; cursor: none; }
         #net-container { position: absolute; top: 50%; width: 100%; height: 40px; transform: translateY(-100%); z-index: 5; pointer-events: none; }
@@ -32,15 +33,18 @@
 <div id="menu">
     <h1>🏓 ITTF PRO MASTERS</h1>
     <div class="rule-box">
-        <h3>1. 공격 기술 가이드</h3>
-        • <b>스매시 (빠른 스윙):</b> 마우스를 매우 빠르게 휘두르면 공이 위력적으로 발사됩니다.<br>
-        • <b>드라이브 (좌클릭 유지):</b> 안정적이고 빠른 공세 전환 공격입니다.<br>
-        • <b>커트 (우클릭 유지):</b> 공의 속도를 줄여 네트를 살짝 넘기는 기술입니다.<br>
-        
-        <h3>2. 득점 규칙</h3>
-        • <b>2 BOUND:</b> 한쪽 코트에서 공이 2번 튕기면 즉시 실점합니다.<br>
-        • <b>MISS:</b> 상대 탁구대 안착에 실패하면 실점합니다.<br>
-        • <b>NET:</b> 네트에 걸리면 실점하며, 듀스 상황은 2점 차 승리가 필요합니다.
+        <h3>[ 기술 가이드 ]</h3>
+        <ul>
+            <li><b>⚡ 스매시:</b> 마우스를 매우 빠르게 휘두르세요. 공이 낮고 강력하게 상대 탁구대 <b>끝(모서리)</b>으로 꽂힙니다. 결정구로 사용하세요.</li>
+            <li><b>☄️ 드라이브 (좌클릭):</b> 공격적인 회전을 줍니다. 적당한 속도로 구석을 공략하기 좋습니다.</li>
+            <li><b>🛡️ 커트 (우클릭):</b> 공을 안전하게 넘깁니다. 네트 근처에 <b>짧게 떨어지므로</b> 상대의 공격을 방해할 때 효과적입니다.</li>
+        </ul>
+        <h3>[ 게임 규칙 ]</h3>
+        <ul>
+            <li><b>2 BOUND:</b> 공이 바닥에 닿기 전 자기 코트에서 2번 튕기면 실점.</li>
+            <li><b>MISS:</b> 상대 탁구대 위를 맞추지 못하고 밖으로 나가면 실점.</li>
+            <li><b>DEUCE:</b> 10:10부터는 2점을 먼저 앞서야 승리합니다.</li>
+        </ul>
     </div>
     <div class="btn-group">
         <button class="menu-btn" onclick="startGame('easy')">초보자</button>
@@ -98,10 +102,9 @@ let state = {
 function startGame(diff) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     state.cpu.mode = diff;
-    if (diff === 'abs') { state.cpu.speed = 0.12; state.cpu.delayLimit = 0.05; }
+    if (diff === 'abs') { state.cpu.speed = 0.13; state.cpu.delayLimit = 0.03; }
     else if (diff === 'pro') { state.cpu.speed = 0.08; state.cpu.delayLimit = 0.15; }
     else { state.cpu.speed = 0.04; state.cpu.delayLimit = 0.3; }
-    
     document.getElementById('menu').style.display = 'none';
     state.score = { u: 0, c: 0 }; state.server = 'user';
     document.getElementById('us').innerText = "0"; document.getElementById('cs').innerText = "0";
@@ -111,8 +114,7 @@ function startGame(diff) {
 function resetRound() {
     const { u, c } = state.score;
     if ((u >= 11 || c >= 11) && Math.abs(u - c) >= 2) {
-        state.running = false;
-        document.getElementById('menu').style.display = 'flex';
+        state.running = false; document.getElementById('menu').style.display = 'flex';
         return;
     }
     state.running = true; state.gameState = 'WAIT_SERVE'; state.bounceHistory = [];
@@ -122,8 +124,7 @@ function resetRound() {
         statusEl.innerText = "YOUR SERVE";
     } else {
         state.ball = { x: W()/2, y: 80, z: 20, dx: 0, dy: 0, dz: 0 };
-        statusEl.innerText = "CPU SERVE";
-        setTimeout(() => cpuServe(), 1200);
+        statusEl.innerText = "CPU SERVE"; setTimeout(() => cpuServe(), 1200);
     }
     if (!loopId) loop();
 }
@@ -143,8 +144,8 @@ function loop() {
     }
     if (state.ball.z <= 0) {
         state.ball.z = 0;
-        let bFactor = (state.lastHitter === 'user' && state.spinType === 'drive') ? 0.85 : 0.6;
-        if (state.spinType === 'cut') { state.ball.dx *= 0.7; state.ball.dy *= 0.8; }
+        let bFactor = (state.spinType === 'smash') ? 0.9 : 0.6;
+        if (state.spinType === 'cut') { state.ball.dx *= 0.65; state.ball.dy *= 0.75; }
         state.ball.dz = Math.abs(state.ball.dz) * bFactor;
         const isUserSide = state.ball.y > H()/2;
         const inTable = (state.ball.x > 0 && state.ball.x < W() && state.ball.y > 0 && state.ball.y < H());
@@ -153,8 +154,7 @@ function loop() {
             playSound(450, 0.08);
             if (state.bounceHistory.length >= 2 && state.bounceHistory.slice(-1)[0] === state.bounceHistory.slice(-2)[0]) {
                 state.running = false; msgEl.innerText = "2 BOUND!"; msgEl.style.display = 'block';
-                setTimeout(() => endPoint(state.bounceHistory.slice(-1)[0] === 'CPU'), 1000);
-                return;
+                setTimeout(() => endPoint(state.bounceHistory.slice(-1)[0] === 'CPU'), 1000); return;
             }
         } else {
             state.running = false; msgEl.innerText = "MISS!"; msgEl.style.display = 'block';
@@ -164,7 +164,7 @@ function loop() {
     if (state.ball.dy < 0) {
         state.cpu.reactionDelay += 0.016;
         if (state.cpu.reactionDelay > state.cpu.delayLimit) { 
-            let targetX = state.ball.x + (state.ball.dx * 2.2); 
+            let targetX = state.ball.x + (state.ball.dx * 2.5); 
             state.cpu.x += (targetX - state.cpu.x) * state.cpu.speed; 
         }
     } else {
@@ -173,7 +173,7 @@ function loop() {
     state.cpu.y = 80;
     if (state.ball.z > 0 && state.ball.z < 85 && state.ball.y > H()/2) {
         let speed = Math.hypot(state.user.vx, state.user.vy);
-        if (Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y) < 65 && speed > 2.5) {
+        if (Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y) < 70 && speed > 2.5) {
             if (state.gameState === 'TOSSING' || (state.gameState === 'RALLY' && state.ball.dy > 0)) hitBall('user', speed);
         }
     }
@@ -199,20 +199,27 @@ function hitBall(hitter, swingSpeed) {
     state.gameState = 'RALLY'; state.lastHitter = hitter; state.isServeMode = isServe;
     playSound(600, 0.1);
     if (hitter === 'user') {
-        state.ball.dx = Math.max(-13, Math.min(13, state.user.vx * 0.65));
-        if (swingSpeed > 30) { state.spinType = 'smash'; state.ball.dy = -swingSpeed * 1.5; state.ball.dz = 3; }
-        else if (mouseButtons === 1) { state.spinType = 'drive'; state.ball.dy = -swingSpeed * 1.2; state.ball.dz = 5.5; }
-        else if (mouseButtons === 2) { state.spinType = 'cut'; state.ball.dy = -swingSpeed * 0.8; state.ball.dz = 4; }
-        else { state.spinType = 'none'; state.ball.dy = -18; state.ball.dz = 4.5; }
+        state.ball.dx = Math.max(-14, Math.min(14, state.user.vx * 0.7));
+        // [기술적 특징 재조정]
+        if (swingSpeed > 28) { // 스매시: 직선적이고 테이블 끝 조준
+            state.spinType = 'smash'; 
+            state.ball.dy = -swingSpeed * 1.55; 
+            state.ball.dz = 2.5;
+            // 테이블 안으로 들어올 확률 보정 (너무 무리하지 않은 샷일 때)
+            if (Math.abs(state.ball.dy) > 45) state.ball.dy *= 0.85; 
+        } else if (mouseButtons === 1) { // 드라이브
+            state.spinType = 'drive'; state.ball.dy = -swingSpeed * 1.25; state.ball.dz = 5.8; 
+        } else if (mouseButtons === 2) { // 커트: 반발력 강화 + 짧게 낙하
+            state.spinType = 'cut'; state.ball.dy = -13 - (swingSpeed * 0.4); state.ball.dz = 4.5;
+        } else { state.spinType = 'none'; state.ball.dy = -18; state.ball.dz = 4.8; }
         if (isServe) { state.ball.dy = -13; state.ball.dz = state.ball.z < 25 ? -2.5 : -4; }
     } else {
-        // [절대자 모드 CPU 지능화]
         let rand = Math.random();
-        state.ball.dx = (Math.random() - 0.5) * (isServe ? 6 : (state.cpu.mode === 'abs' ? 16 : 12));
+        state.ball.dx = (Math.random() - 0.5) * (isServe ? 6 : (state.cpu.mode === 'abs' ? 18 : 12));
         if (state.cpu.mode === 'abs' && !isServe) {
-            if (rand < 0.2) { state.ball.dy = 35; state.ball.dz = 2; } // 스매시
-            else if (rand < 0.5) { state.ball.dy = 18; state.ball.dz = 6; } // 드라이브
-            else { state.ball.dy = 12; state.ball.dz = 4; } // 커트/일반
+            if (rand < 0.25) { state.spinType = 'smash'; state.ball.dy = 40; state.ball.dz = 2.2; } // CPU 스매시
+            else if (rand < 0.55) { state.spinType = 'cut'; state.ball.dy = 12; state.ball.dz = 4.2; } // CPU 커트
+            else { state.spinType = 'drive'; state.ball.dy = 22; state.ball.dz = 6; }
         } else {
             state.ball.dy = isServe ? 12 : 14 + Math.random() * 8; state.ball.dz = isServe ? -3.2 : 5;
         }
