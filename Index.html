@@ -1,1 +1,240 @@
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>초미니 탁구 챔피언십</title>
+
+<style>
+:root {
+  --bg: #2c3e50;
+  --table: #27ae60;
+  --line: #fff;
+  --ball: #f1c40f;
+  --user: #e74c3c;
+  --cpu: #3498db;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: white;
+  font-family: sans-serif;
+}
+
+/* 게임판 */
+#game {
+  position: relative;
+  width: 800px;
+  height: 500px;
+  background: var(--table);
+  border: 10px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* 중앙선 */
+#net {
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: rgba(255,255,255,0.5);
+}
+
+/* HUD */
+#hud {
+  position: absolute;
+  top: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  font-weight: bold;
+}
+
+.score { font-size: 32px; }
+
+/* 오브젝트 */
+.ball {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background: var(--ball);
+  border-radius: 50%;
+}
+
+.paddle {
+  position: absolute;
+  width: 15px;
+  border-radius: 5px;
+}
+
+#user { left: 10px; background: var(--user); }
+#cpu { right: 10px; background: var(--cpu); }
+
+/* 컨트롤 */
+#controls {
+  margin-top: 15px;
+}
+
+button.active {
+  background: gold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+  <div id="hud">
+    <div>나 Lv.<span id="lv">1</span> <span id="us" class="score">0</span></div>
+    <div id="enemy">Lv.1 초보자</div>
+    <div><span id="cs" class="score">0</span> 상대</div>
+  </div>
+
+  <div id="net"></div>
+  <div id="ball" class="ball"></div>
+  <div id="user" class="paddle"></div>
+  <div id="cpu" class="paddle"></div>
+</div>
+
+<div id="controls">
+  <button onclick="setSkill('cut')">커트</button>
+  <button onclick="setSkill('drive')" class="active">드라이브</button>
+  <button onclick="setSkill('smash')">스매시</button>
+</div>
+
+<script>
+// ======================
+// 상태
+// ======================
+const state = {
+  score: { user: 0, cpu: 0 },
+  level: 1,
+  skill: 'drive',
+
+  ball: { x: 400, y: 250, dx: 4, dy: 4 },
+
+  user: { y: 200, h: 90 },
+  cpu: { y: 200, h: 90, speed: 3 }
+};
+
+const LEVEL = [
+  { name: "초보자", speed: 3, ball: 4, size: 90 },
+  { name: "아마추어", speed: 5, ball: 6, size: 80 },
+  { name: "프로", speed: 7, ball: 7, size: 70 }
+];
+
+// ======================
+// DOM
+// ======================
+const ballEl = document.getElementById('ball');
+const userEl = document.getElementById('user');
+const cpuEl = document.getElementById('cpu');
+
+// ======================
+// 입력
+// ======================
+document.getElementById('game').addEventListener('mousemove', e => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  state.user.y = e.clientY - rect.top - state.user.h / 2;
+});
+
+// ======================
+// 게임 로직
+// ======================
+function moveBall() {
+  state.ball.x += state.ball.dx;
+  state.ball.y += state.ball.dy;
+
+  if (state.ball.y < 0 || state.ball.y > 500)
+    state.ball.dy *= -1;
+}
+
+function handleCollision() {
+  const isLeft = state.ball.x < 400;
+  const paddle = isLeft ? state.user : state.cpu;
+
+  if ((isLeft && state.ball.x < 25) || (!isLeft && state.ball.x > 775)) {
+
+    if (state.ball.y > paddle.y && state.ball.y < paddle.y + paddle.h) {
+      if (isLeft) applySkill();
+      else state.ball.dx *= -1;
+    } else {
+      score(!isLeft);
+    }
+  }
+}
+
+function applySkill() {
+  const map = { cut: 5, drive: 7, smash: 10 };
+  state.ball.dx = map[state.skill];
+}
+
+function score(userWon) {
+  userWon ? state.score.user++ : state.score.cpu++;
+  resetBall();
+  updateHUD();
+}
+
+function cpuAI() {
+  const center = state.cpu.y + state.cpu.h / 2;
+  if (center < state.ball.y) state.cpu.y += state.cpu.speed;
+  else state.cpu.y -= state.cpu.speed;
+}
+
+// ======================
+// UI
+// ======================
+function draw() {
+  ballEl.style.left = state.ball.x + 'px';
+  ballEl.style.top = state.ball.y + 'px';
+
+  userEl.style.top = state.user.y + 'px';
+  cpuEl.style.top = state.cpu.y + 'px';
+}
+
+function updateHUD() {
+  us.innerText = state.score.user;
+  cs.innerText = state.score.cpu;
+}
+
+function setSkill(s) {
+  state.skill = s;
+}
+
+// ======================
+// 초기화
+// ======================
+function resetBall() {
+  const speed = LEVEL[state.level - 1].ball;
+  state.ball.x = 400;
+  state.ball.y = 250;
+  state.ball.dx = Math.random() > 0.5 ? speed : -speed;
+  state.ball.dy = Math.random() > 0.5 ? speed : -speed;
+}
+
+// ======================
+// 루프
+// ======================
+function loop() {
+  moveBall();
+  handleCollision();
+  cpuAI();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// 시작
+resetBall();
+loop();
+</script>
+
+</body>
+</html>
