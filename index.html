@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ITTF Pro Masters v10.3</title>
+    <title>ITTF Pro Masters v10.4</title>
     <style>
         :root { --table: #1e5d2f; --line: #ffffff; --accent: #f1c40f; }
         body { margin: 0; background: #111; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Pretendard', sans-serif; touch-action: none; color: white; }
         #menu { position: absolute; inset: 0; background: rgba(0,0,0,0.98); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         #menu h1 { color: var(--accent); font-size: 42px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
-        .rule-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; max-width: 520px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.8; font-size: 13.5px; color: #ccc; text-align: left; }
-        .rule-box h3 { margin-top: 0; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; font-size: 16px; }
+        .rule-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; max-width: 550px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.6; font-size: 13px; color: #ccc; text-align: left; }
+        .rule-box h3 { margin: 10px 0 5px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; font-size: 15px; }
         .rule-box b { color: var(--accent); }
-        .btn-group { display: flex; gap: 15px; }
-        .menu-btn { padding: 15px 40px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; font-size: 18px; transition: 0.3s; }
-        .menu-btn.pro { background: #e74c3c; color: white; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .menu-btn { padding: 12px 30px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; font-size: 16px; transition: 0.3s; }
+        .menu-btn.pro { background: #e67e22; color: white; }
+        .menu-btn.abs { background: #c0392b; color: white; text-transform: uppercase; box-shadow: 0 0 15px rgba(192,57,43,0.6); }
         
         #court { flex: 1; position: relative; background: var(--table); border: 12px solid var(--line); margin: 10px 40px; perspective: 1500px; overflow: hidden; cursor: none; }
         #net-container { position: absolute; top: 50%; width: 100%; height: 40px; transform: translateY(-100%); z-index: 5; pointer-events: none; }
@@ -31,23 +32,20 @@
 <div id="menu">
     <h1>🏓 ITTF PRO MASTERS</h1>
     <div class="rule-box">
-        <h3>1. 기본 조작법</h3>
-        • <b>서브(첫 타격):</b> 화면을 <b>한 번 클릭</b>하면 공을 공중으로 던집니다. 공이 떨어질 때 마우스를 빠르게 휘둘러 치세요.<br>
-        • <b>공 조준:</b> 마우스(탁구채)를 움직이는 방향과 속도에 따라 공의 궤적이 결정됩니다.<br>
+        <h3>1. 공격 기술 가이드</h3>
+        • <b>스매시 (빠른 스윙):</b> 마우스를 매우 빠르게 휘두르면 공이 위력적으로 발사됩니다.<br>
+        • <b>드라이브 (좌클릭 유지):</b> 안정적이고 빠른 공세 전환 공격입니다.<br>
+        • <b>커트 (우클릭 유지):</b> 공의 속도를 줄여 네트를 살짝 넘기는 기술입니다.<br>
         
-        <h3>2. 공격 기술 (마우스 버튼 활용)</h3>
-        • <b>드라이브 (좌클릭 유지):</b> 공을 강하고 빠르게 쳐서 상대 구석을 찌르는 공격형 타격입니다.<br>
-        • <b>커트 (우클릭 유지):</b> 공의 속도를 줄여 네트를 살짝 넘기는 수비형 타격입니다.<br>
-        
-        <h3>3. 득점 및 실점 규칙</h3>
-        • <b>NET:</b> 공이 네트에 걸려 넘어가지 못하면 상대방이 득점합니다.<br>
-        • <b>2 BOUND:</b> 내 코트에서 공이 <b>두 번 연속</b> 튕기면 실점합니다.<br>
-        • <b>MISS:</b> 내가 친 공이 상대방 탁구대 위에 맞지 않고 밖으로 나가면 실점합니다.<br>
-        • <b>승리:</b> 11점을 먼저 따면 승리하며, 10:10일 경우 2점 차이가 날 때까지 <b>듀스</b>가 진행됩니다.
+        <h3>2. 득점 규칙</h3>
+        • <b>2 BOUND:</b> 한쪽 코트에서 공이 2번 튕기면 즉시 실점합니다.<br>
+        • <b>MISS:</b> 상대 탁구대 안착에 실패하면 실점합니다.<br>
+        • <b>NET:</b> 네트에 걸리면 실점하며, 듀스 상황은 2점 차 승리가 필요합니다.
     </div>
     <div class="btn-group">
-        <button class="menu-btn" onclick="startGame('easy')">초보자 모드</button>
-        <button class="menu-btn pro" onclick="startGame('pro')">프로 모드</button>
+        <button class="menu-btn" onclick="startGame('easy')">초보자</button>
+        <button class="menu-btn pro" onclick="startGame('pro')">프로</button>
+        <button class="menu-btn abs" onclick="startGame('abs')">절대자</button>
     </div>
 </div>
 
@@ -92,15 +90,18 @@ let state = {
     running: false, score: { u: 0, c: 0 },
     ball: { x: 0, y: 0, z: 0, dx: 0, dy: 0, dz: 0 },
     user: { x: 0, y: 0, vx: 0, vy: 0, prevX: 0, prevY: 0 },
-    cpu: { x: 0, y: 0, reactionDelay: 0, speed: 0.04, delayLimit: 0.3 },
+    cpu: { x: 0, y: 0, reactionDelay: 0, speed: 0.04, delayLimit: 0.3, mode: 'easy' },
     gameState: 'WAIT_SERVE', server: 'user', serveCount: 0,
     lastHitter: '', bounceHistory: [], spinType: 'none', isServeMode: false
 };
 
 function startGame(diff) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    if (diff === 'pro') { state.cpu.speed = 0.08; state.cpu.delayLimit = 0.15; }
+    state.cpu.mode = diff;
+    if (diff === 'abs') { state.cpu.speed = 0.12; state.cpu.delayLimit = 0.05; }
+    else if (diff === 'pro') { state.cpu.speed = 0.08; state.cpu.delayLimit = 0.15; }
     else { state.cpu.speed = 0.04; state.cpu.delayLimit = 0.3; }
+    
     document.getElementById('menu').style.display = 'none';
     state.score = { u: 0, c: 0 }; state.server = 'user';
     document.getElementById('us').innerText = "0"; document.getElementById('cs').innerText = "0";
@@ -150,10 +151,9 @@ function loop() {
         if (inTable) {
             state.bounceHistory.push(isUserSide ? 'USER' : 'CPU');
             playSound(450, 0.08);
-            const bh = state.bounceHistory;
-            if (bh.length >= 2 && bh[bh.length-1] === bh[bh.length-2]) {
+            if (state.bounceHistory.length >= 2 && state.bounceHistory.slice(-1)[0] === state.bounceHistory.slice(-2)[0]) {
                 state.running = false; msgEl.innerText = "2 BOUND!"; msgEl.style.display = 'block';
-                setTimeout(() => endPoint(bh[bh.length-1] === 'CPU'), 1000);
+                setTimeout(() => endPoint(state.bounceHistory.slice(-1)[0] === 'CPU'), 1000);
                 return;
             }
         } else {
@@ -164,27 +164,21 @@ function loop() {
     if (state.ball.dy < 0) {
         state.cpu.reactionDelay += 0.016;
         if (state.cpu.reactionDelay > state.cpu.delayLimit) { 
-            let targetX = state.ball.x + (state.ball.dx * 2); 
+            let targetX = state.ball.x + (state.ball.dx * 2.2); 
             state.cpu.x += (targetX - state.cpu.x) * state.cpu.speed; 
         }
     } else {
-        state.cpu.reactionDelay = 0;
-        state.cpu.x += (W()/2 - state.cpu.x) * 0.02; 
+        state.cpu.reactionDelay = 0; state.cpu.x += (W()/2 - state.cpu.x) * 0.02; 
     }
     state.cpu.y = 80;
     if (state.ball.z > 0 && state.ball.z < 85 && state.ball.y > H()/2) {
-        let dist = Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y);
         let speed = Math.hypot(state.user.vx, state.user.vy);
-        if (dist < 65 && speed > 2.5) {
+        if (Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y) < 65 && speed > 2.5) {
             if (state.gameState === 'TOSSING' || (state.gameState === 'RALLY' && state.ball.dy > 0)) hitBall('user', speed);
         }
     }
     if (state.ball.y < 150 && state.ball.dy < 0 && state.ball.z < 70 && state.ball.z > 5) {
-        if (Math.abs(state.ball.x - state.cpu.x) < 55) {
-            let failProb = (state.spinType === 'cut') ? 0.3 : 0.1;
-            if (state.gameState === 'RALLY' && Math.random() < failProb) return; 
-            hitBall('cpu', 10);
-        }
+        if (Math.abs(state.ball.x - state.cpu.x) < 55) hitBall('cpu', 10);
     }
     draw();
 }
@@ -205,14 +199,23 @@ function hitBall(hitter, swingSpeed) {
     state.gameState = 'RALLY'; state.lastHitter = hitter; state.isServeMode = isServe;
     playSound(600, 0.1);
     if (hitter === 'user') {
-        state.ball.dx = Math.max(-12, Math.min(12, state.user.vx * 0.6));
-        if (mouseButtons === 1) { state.spinType = 'drive'; state.ball.dy = -swingSpeed * 1.25; state.ball.dz = 5.5; }
-        else if (mouseButtons === 2) { state.spinType = 'cut'; state.ball.dy = -swingSpeed * 0.85; state.ball.dz = 3.8; }
+        state.ball.dx = Math.max(-13, Math.min(13, state.user.vx * 0.65));
+        if (swingSpeed > 30) { state.spinType = 'smash'; state.ball.dy = -swingSpeed * 1.5; state.ball.dz = 3; }
+        else if (mouseButtons === 1) { state.spinType = 'drive'; state.ball.dy = -swingSpeed * 1.2; state.ball.dz = 5.5; }
+        else if (mouseButtons === 2) { state.spinType = 'cut'; state.ball.dy = -swingSpeed * 0.8; state.ball.dz = 4; }
         else { state.spinType = 'none'; state.ball.dy = -18; state.ball.dz = 4.5; }
         if (isServe) { state.ball.dy = -13; state.ball.dz = state.ball.z < 25 ? -2.5 : -4; }
     } else {
-        state.ball.dx = (Math.random() - 0.5) * (isServe ? 6 : 12);
-        state.ball.dy = isServe ? 12 : 14 + Math.random() * 8; state.ball.dz = isServe ? -3.2 : 5;
+        // [절대자 모드 CPU 지능화]
+        let rand = Math.random();
+        state.ball.dx = (Math.random() - 0.5) * (isServe ? 6 : (state.cpu.mode === 'abs' ? 16 : 12));
+        if (state.cpu.mode === 'abs' && !isServe) {
+            if (rand < 0.2) { state.ball.dy = 35; state.ball.dz = 2; } // 스매시
+            else if (rand < 0.5) { state.ball.dy = 18; state.ball.dz = 6; } // 드라이브
+            else { state.ball.dy = 12; state.ball.dz = 4; } // 커트/일반
+        } else {
+            state.ball.dy = isServe ? 12 : 14 + Math.random() * 8; state.ball.dz = isServe ? -3.2 : 5;
+        }
     }
     state.bounceHistory = [];
 }
@@ -229,8 +232,9 @@ function endPoint(userWin) {
     document.getElementById('us').innerText = state.score.u;
     document.getElementById('cs').innerText = state.score.c;
     state.serveCount++;
-    const isDeuce = state.score.u >= 10 && state.score.c >= 10;
-    if (isDeuce || state.serveCount >= 2) { state.server = (state.server === 'user') ? 'cpu' : 'user'; state.serveCount = 0; }
+    if ((state.score.u >= 10 && state.score.c >= 10) || state.serveCount >= 2) { 
+        state.server = (state.server === 'user') ? 'cpu' : 'user'; state.serveCount = 0; 
+    }
     setTimeout(() => { msgEl.style.display = 'none'; resetRound(); }, 1200);
 }
 
