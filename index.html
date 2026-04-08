@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ITTF Pro Masters v8.0 - Bug Fixed</title>
+    <title>ITTF Pro Masters v8.5 - Physics Tuned</title>
     <style>
         :root { --table: #1e5d2f; --line: #ffffff; --accent: #f1c40f; }
         body { margin: 0; background: #111; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Pretendard', sans-serif; touch-action: none; color: white; }
@@ -11,29 +11,27 @@
         #menu h1 { color: var(--accent); font-size: 42px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
         .rule-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; max-width: 480px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.6; font-size: 13px; color: #bbb; text-align: left; }
         .menu-btn { padding: 15px 60px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; font-size: 18px; transition: 0.3s; }
-        .menu-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px var(--accent); }
         
-        #court { flex: 1; position: relative; background: var(--table); border: 12px solid var(--line); margin: 10px 40px; perspective: 1500px; overflow: hidden; cursor: none; box-shadow: 0 30px 60px rgba(0,0,0,0.8); }
+        #court { flex: 1; position: relative; background: var(--table); border: 12px solid var(--line); margin: 10px 40px; perspective: 1500px; overflow: hidden; cursor: none; }
         #net-container { position: absolute; top: 50%; width: 100%; height: 40px; transform: translateY(-100%); z-index: 5; pointer-events: none; }
-        #net-mesh { width: 100%; height: 30px; background: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 5px), repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 5px), rgba(255,255,255,0.1); border-top: 4px solid #fff; }
+        #net-mesh { width: 100%; height: 28px; background: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 5px), rgba(255,255,255,0.1); border-top: 4px solid #fff; }
         #net-shadow { width: 100%; height: 10px; background: rgba(0,0,0,0.3); filter: blur(5px); }
 
         #hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; font-size: 28px; font-weight: 900; z-index: 30; pointer-events: none; }
-        #ball { position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3); transition: width 0.05s, height 0.05s; }
+        #ball { position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3); }
         #ball-shadow { position: absolute; width: 20px; height: 10px; background: rgba(0,0,0,0.8); border-radius: 50%; transform: translate(-50%, -50%); z-index: 4; pointer-events: none; }
         .paddle { position: absolute; width: 100px; height: 120px; transform: translate(-50%, -50%); z-index: 20; pointer-events: none; }
         #msg { position: absolute; top: 55%; width: 100%; text-align: center; font-size: 40px; color: #ffeb3b; font-weight: 900; display: none; z-index: 40; text-shadow: 0 0 20px #000; }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
 <div id="menu">
     <h1 id="menu-title">🏓 ITTF PRO MASTERS</h1>
     <div class="rule-box" id="rule-content">
-        <b>[ BUG FIXED & VISUAL UPGRADE ]</b><br>
-        • <b>네트 판정:</b> 네트에 걸리면 친 사람의 즉시 실점입니다.<br>
-        • <b>바운드 이펙트:</b> 공이 튀길 때 시각적 피드백이 강화되었습니다.<br>
-        • <b>공정성:</b> 2바운드 및 서브 규칙이 양측에 엄격히 적용됩니다.
+        • <b>네트 실점 시스템:</b> 네트에 걸리는 순간 즉시 상대방이 득점합니다.<br>
+        • <b>현실적 물리:</b> 서브 시 타점이 너무 낮거나, 커트 공을 무리하게 스매시할 때 네트에 걸릴 확률이 높습니다.<br>
+        • <b>바운드 강조:</b> 공이 튀길 때의 타구감을 시각적으로 개선했습니다.
     </div>
     <button class="menu-btn" onclick="startGame()">경기 시작</button>
 </div>
@@ -45,13 +43,10 @@
 </div>
 
 <div id="court">
-    <div id="net-container">
-        <div id="net-mesh"></div>
-        <div id="net-shadow"></div>
-    </div>
+    <div id="net-container"><div id="net-mesh"></div><div id="net-shadow"></div></div>
     <div id="ball-shadow"></div>
     <div id="ball"></div>
-    <div id="msg">OUT</div>
+    <div id="msg"></div>
     
     <svg id="user-pad" class="paddle" viewBox="0 0 100 120">
         <rect x="42" y="80" width="16" height="40" fill="#5d4037" rx="2"/>
@@ -130,12 +125,14 @@ function loop() {
         state.ball.dz -= 0.25; 
         state.ball.z += state.ball.dz;
         
-        // [버그 수정] 네트 판정: 네트에 닿으면 튕기지 않고 즉시 친 사람의 실점 처리
+        // [네트 판정 개선] 네트에 닿으면 즉시 득점 처리 후 라운드 종료
         if (Math.abs(state.ball.y - H()/2) < 8 && state.ball.z < 28) {
-            playSound(150, 0.15);
-            state.running = false; 
-            // 마지막에 친 사람이 누구냐에 따라 점수 부여
-            setTimeout(() => endPoint(state.lastHitter === 'cpu'), 100);
+            playSound(150, 0.2);
+            state.running = false;
+            msgEl.innerText = "NET!";
+            msgEl.style.display = 'block';
+            // 친 사람의 반대편이 득점
+            setTimeout(() => { msgEl.style.display = 'none'; endPoint(state.lastHitter === 'cpu'); }, 1000);
             return;
         }
     }
@@ -144,7 +141,6 @@ function loop() {
         state.ball.z = 0;
         let bFactor = (state.lastHitter === 'user' && state.spinType === 'drive') ? 0.9 : 0.6;
         if (state.spinType === 'cut') { state.ball.dx *= 0.5; state.ball.dy *= 0.7; }
-        
         state.ball.dz = Math.abs(state.ball.dz) * bFactor;
         
         const isUserSide = state.ball.y > H()/2;
@@ -153,10 +149,9 @@ function loop() {
         if (inTable) {
             state.bounceHistory.push(isUserSide ? 'USER' : 'CPU');
             playSound(450, 0.08);
-            
-            // [시각 효과] 바운드 시 공이 살짝 커짐
-            ballEl.style.width = '24px'; ballEl.style.height = '24px';
-            setTimeout(() => { ballEl.style.width = '18px'; ballEl.style.height = '18px'; }, 50);
+            // 바운드 시각화
+            ballEl.style.transform = `translate(-50%, -50%) scale(1.4)`;
+            setTimeout(() => { ballEl.style.transform = `translate(-50%, -50%) scale(1.0)`; }, 50);
 
             const bh = state.bounceHistory;
             if (bh.length >= 2) {
@@ -168,7 +163,7 @@ function loop() {
         }
     }
 
-    // AI 로직
+    // AI 제어
     if (state.ball.dy < 0) {
         state.cpu.reactionDelay += 0.016;
         if (state.cpu.reactionDelay > 0.18) { 
@@ -181,19 +176,19 @@ function loop() {
     }
     state.cpu.y = 80;
 
-    // 타격 판정 (유저)
+    // 타격 (유저)
     if (state.ball.z > 0 && state.ball.z < 85 && state.ball.y > H()/2) {
         let dist = Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y);
         let speed = Math.hypot(state.user.vx, state.user.vy);
-        if (dist < 65 && speed > 2) {
+        if (dist < 65 && speed > 2.5) {
             if (state.gameState === 'TOSSING' || (state.gameState === 'RALLY' && state.ball.dy > 0)) hitBall('user', speed);
         }
     }
 
-    // 타격 판정 (CPU)
+    // 타격 (CPU)
     if (state.ball.y < 150 && state.ball.dy < 0 && state.ball.z < 70 && state.ball.z > 5) {
         if (Math.abs(state.ball.x - state.cpu.x) < 55) {
-            let failProb = (state.spinType === 'cut') ? 0.2 : 0.06;
+            let failProb = (state.spinType === 'cut') ? 0.22 : 0.06;
             if (state.gameState === 'RALLY' && Math.random() < failProb) return; 
             hitBall('cpu', 10);
         }
@@ -230,12 +225,16 @@ function hitBall(hitter, swingSpeed) {
         else state.spinType = 'none';
 
         if (isServe) {
-            state.ball.dy = -13; state.ball.dz = -3.5;
+            // 서브 시 너무 낮게 치면 네트에 걸릴 확률 높임 (dz 조절)
+            let servePower = state.ball.z < 25 ? -2 : -3.5;
+            state.ball.dy = -13; state.ball.dz = servePower;
         } else {
-            let power = Math.min(25, Math.max(swingSpeed * 1.3, 15));
+            let power = Math.min(26, Math.max(swingSpeed * 1.3, 15));
+            // 커트 공을 스매시(none spin)하면 궤적이 낮아져 네트 위험 증가
+            let hitZ = (state.spinType === 'none' && lastEnemySpin() === 'cut') ? 2.5 : 4;
             if (state.spinType === 'drive') { state.ball.dy = -power * 1.1; state.ball.dz = 6; }
             else if (state.spinType === 'cut') { state.ball.dy = -power * 0.6; state.ball.dz = 2.5; }
-            else { state.ball.dy = -power * 1.2; state.ball.dz = 3.5; }
+            else { state.ball.dy = -power * 1.25; state.ball.dz = hitZ; }
         }
     } else {
         state.ball.dx = (Math.random() - 0.5) * 14;
@@ -244,6 +243,8 @@ function hitBall(hitter, swingSpeed) {
     }
     state.bounceHistory = [];
 }
+
+function lastEnemySpin() { return state.spinType; } // 간소화된 체크
 
 function cpuServe() {
     if (state.gameState !== 'WAIT_SERVE') return;
@@ -256,7 +257,7 @@ function cpuServe() {
 }
 
 function endPoint(userWin) {
-    if (!state.running) return;
+    if (!state.running && msgEl.innerText !== "NET!") return;
     state.running = false;
     playSound(userWin ? 800 : 200, 0.3);
     userWin ? state.score.u++ : state.score.c++;
@@ -277,11 +278,9 @@ function draw() {
     ballEl.style.top = (state.ball.y - state.ball.z) + 'px';
     shadowEl.style.left = state.ball.x + 'px';
     shadowEl.style.top = state.ball.y + 'px';
-    // [시각 효과] 그림자를 더 진하게 하여 바운드 지점 명확화
     let sScale = Math.max(0.3, 1.0 - state.ball.z/120);
     shadowEl.style.transform = `translate(-50%, -50%) scale(${sScale})`;
     shadowEl.style.opacity = state.ball.z < 5 ? 0.9 : Math.max(0.2, 0.7 - state.ball.z/150);
-    
     userEl.style.left = state.user.x + 'px';
     userEl.style.top = state.user.y + 'px';
     cpuEl.style.left = state.cpu.x + 'px';
@@ -297,7 +296,7 @@ window.addEventListener('mouseup', () => mouseButtons = 0);
 court.addEventListener('mousemove', e => {
     const rect = court.getBoundingClientRect();
     state.user.x = e.clientX - rect.left;
-    state.user.y = Math.max(H()/2 + 100, e.clientY - rect.top);
+    state.user.y = Math.max(H()/2 + 110, e.clientY - rect.top);
     state.user.vx = state.user.x - state.user.prevX;
     state.user.vy = state.user.y - state.user.prevY;
     state.user.prevX = state.user.x; state.user.prevY = state.user.y;
