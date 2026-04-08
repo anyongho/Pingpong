@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ITTF Pro Masters v10.2</title>
+    <title>ITTF Pro Masters v10.3</title>
     <style>
         :root { --table: #1e5d2f; --line: #ffffff; --accent: #f1c40f; }
         body { margin: 0; background: #111; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Pretendard', sans-serif; touch-action: none; color: white; }
         #menu { position: absolute; inset: 0; background: rgba(0,0,0,0.98); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         #menu h1 { color: var(--accent); font-size: 42px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
-        .rule-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; max-width: 500px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.7; font-size: 14px; color: #ccc; text-align: left; }
+        .rule-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; max-width: 520px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.8; font-size: 13.5px; color: #ccc; text-align: left; }
+        .rule-box h3 { margin-top: 0; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; font-size: 16px; }
         .rule-box b { color: var(--accent); }
         .btn-group { display: flex; gap: 15px; }
         .menu-btn { padding: 15px 40px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; font-size: 18px; transition: 0.3s; }
@@ -18,8 +19,6 @@
         #court { flex: 1; position: relative; background: var(--table); border: 12px solid var(--line); margin: 10px 40px; perspective: 1500px; overflow: hidden; cursor: none; }
         #net-container { position: absolute; top: 50%; width: 100%; height: 40px; transform: translateY(-100%); z-index: 5; pointer-events: none; }
         #net-mesh { width: 100%; height: 28px; background: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 5px), rgba(255,255,255,0.1); border-top: 4px solid #fff; }
-        #net-shadow { width: 100%; height: 10px; background: rgba(0,0,0,0.3); filter: blur(5px); }
-
         #hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; font-size: 28px; font-weight: 900; z-index: 30; pointer-events: none; }
         #ball { position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3); }
         #ball-shadow { position: absolute; width: 20px; height: 10px; background: rgba(0,0,0,0.8); border-radius: 50%; transform: translate(-50%, -50%); z-index: 4; pointer-events: none; }
@@ -30,16 +29,25 @@
 <body>
 
 <div id="menu">
-    <h1 id="menu-title">🏓 ITTF PRO MASTERS</h1>
+    <h1>🏓 ITTF PRO MASTERS</h1>
     <div class="rule-box">
-        <b>[ 조작 & 판정 ]</b><br>
-        • <b>서브:</b> 클릭으로 토스 후 타격.<br>
-        • <b>공격:</b> 좌클릭(드라이브), 우클릭(커트).<br>
-        • <b>판정:</b> NET(네트), 2 BOUND(연속 바운드), MISS(이탈).
+        <h3>1. 기본 조작법</h3>
+        • <b>서브(첫 타격):</b> 화면을 <b>한 번 클릭</b>하면 공을 공중으로 던집니다. 공이 떨어질 때 마우스를 빠르게 휘둘러 치세요.<br>
+        • <b>공 조준:</b> 마우스(탁구채)를 움직이는 방향과 속도에 따라 공의 궤적이 결정됩니다.<br>
+        
+        <h3>2. 공격 기술 (마우스 버튼 활용)</h3>
+        • <b>드라이브 (좌클릭 유지):</b> 공을 강하고 빠르게 쳐서 상대 구석을 찌르는 공격형 타격입니다.<br>
+        • <b>커트 (우클릭 유지):</b> 공의 속도를 줄여 네트를 살짝 넘기는 수비형 타격입니다.<br>
+        
+        <h3>3. 득점 및 실점 규칙</h3>
+        • <b>NET:</b> 공이 네트에 걸려 넘어가지 못하면 상대방이 득점합니다.<br>
+        • <b>2 BOUND:</b> 내 코트에서 공이 <b>두 번 연속</b> 튕기면 실점합니다.<br>
+        • <b>MISS:</b> 내가 친 공이 상대방 탁구대 위에 맞지 않고 밖으로 나가면 실점합니다.<br>
+        • <b>승리:</b> 11점을 먼저 따면 승리하며, 10:10일 경우 2점 차이가 날 때까지 <b>듀스</b>가 진행됩니다.
     </div>
     <div class="btn-group">
-        <button class="menu-btn" onclick="startGame('easy')">초보자 시작</button>
-        <button class="menu-btn pro" onclick="startGame('pro')">프로 시작</button>
+        <button class="menu-btn" onclick="startGame('easy')">초보자 모드</button>
+        <button class="menu-btn pro" onclick="startGame('pro')">프로 모드</button>
     </div>
 </div>
 
@@ -50,18 +58,15 @@
 </div>
 
 <div id="court">
-    <div id="net-container"><div id="net-mesh"></div><div id="net-shadow"></div></div>
+    <div id="net-container"><div id="net-mesh"></div></div>
     <div id="ball-shadow"></div>
     <div id="ball"></div>
     <div id="msg"></div>
-    
     <svg id="user-pad" class="paddle" viewBox="0 0 100 120">
-        <rect x="42" y="80" width="16" height="40" fill="#5d4037" rx="2"/>
-        <circle cx="50" cy="45" r="45" fill="#d32f2f" stroke="#000" stroke-width="2"/>
+        <rect x="42" y="80" width="16" height="40" fill="#5d4037" rx="2"/><circle cx="50" cy="45" r="45" fill="#d32f2f" stroke="#000" stroke-width="2"/>
     </svg>
     <svg id="cpu-pad" class="paddle" viewBox="0 0 100 120">
-        <rect x="42" y="0" width="16" height="40" fill="#5d4037" rx="2"/>
-        <circle cx="50" cy="75" r="45" fill="#1976d2" stroke="#000" stroke-width="2"/>
+        <rect x="42" y="0" width="16" height="40" fill="#5d4037" rx="2"/><circle cx="50" cy="75" r="45" fill="#1976d2" stroke="#000" stroke-width="2"/>
     </svg>
 </div>
 
@@ -94,14 +99,8 @@ let state = {
 
 function startGame(diff) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    // [난이도 설정] 초보자 vs 프로
-    if (diff === 'pro') {
-        state.cpu.speed = 0.08; // 반응 속도 2배
-        state.cpu.delayLimit = 0.15; // 인지 시간 절반
-    } else {
-        state.cpu.speed = 0.04;
-        state.cpu.delayLimit = 0.3;
-    }
+    if (diff === 'pro') { state.cpu.speed = 0.08; state.cpu.delayLimit = 0.15; }
+    else { state.cpu.speed = 0.04; state.cpu.delayLimit = 0.3; }
     document.getElementById('menu').style.display = 'none';
     state.score = { u: 0, c: 0 }; state.server = 'user';
     document.getElementById('us').innerText = "0"; document.getElementById('cs').innerText = "0";
@@ -113,7 +112,6 @@ function resetRound() {
     if ((u >= 11 || c >= 11) && Math.abs(u - c) >= 2) {
         state.running = false;
         document.getElementById('menu').style.display = 'flex';
-        document.getElementById('menu-title').innerText = u > c ? "YOU WIN!" : "GAME OVER";
         return;
     }
     state.running = true; state.gameState = 'WAIT_SERVE'; state.bounceHistory = [];
@@ -133,7 +131,6 @@ let loopId;
 function loop() {
     if (!state.running) { loopId = null; return; }
     loopId = requestAnimationFrame(loop);
-
     if (state.gameState !== 'WAIT_SERVE') {
         state.ball.x += state.ball.dx; state.ball.y += state.ball.dy;
         state.ball.dz -= 0.25; state.ball.z += state.ball.dz;
@@ -143,7 +140,6 @@ function loop() {
             return;
         }
     }
-
     if (state.ball.z <= 0) {
         state.ball.z = 0;
         let bFactor = (state.lastHitter === 'user' && state.spinType === 'drive') ? 0.85 : 0.6;
@@ -151,7 +147,6 @@ function loop() {
         state.ball.dz = Math.abs(state.ball.dz) * bFactor;
         const isUserSide = state.ball.y > H()/2;
         const inTable = (state.ball.x > 0 && state.ball.x < W() && state.ball.y > 0 && state.ball.y < H());
-
         if (inTable) {
             state.bounceHistory.push(isUserSide ? 'USER' : 'CPU');
             playSound(450, 0.08);
@@ -166,8 +161,6 @@ function loop() {
             setTimeout(() => determinePoint(), 1000);
         }
     }
-
-    // CPU 제어 (선택된 난이도 적용)
     if (state.ball.dy < 0) {
         state.cpu.reactionDelay += 0.016;
         if (state.cpu.reactionDelay > state.cpu.delayLimit) { 
@@ -179,8 +172,6 @@ function loop() {
         state.cpu.x += (W()/2 - state.cpu.x) * 0.02; 
     }
     state.cpu.y = 80;
-
-    // 타격 판정
     if (state.ball.z > 0 && state.ball.z < 85 && state.ball.y > H()/2) {
         let dist = Math.hypot(state.ball.x - state.user.x, state.ball.y - state.user.y);
         let speed = Math.hypot(state.user.vx, state.user.vy);
@@ -221,8 +212,7 @@ function hitBall(hitter, swingSpeed) {
         if (isServe) { state.ball.dy = -13; state.ball.dz = state.ball.z < 25 ? -2.5 : -4; }
     } else {
         state.ball.dx = (Math.random() - 0.5) * (isServe ? 6 : 12);
-        state.ball.dy = isServe ? 12 : 14 + Math.random() * 8;
-        state.ball.dz = isServe ? -3.2 : 5;
+        state.ball.dy = isServe ? 12 : 14 + Math.random() * 8; state.ball.dz = isServe ? -3.2 : 5;
     }
     state.bounceHistory = [];
 }
